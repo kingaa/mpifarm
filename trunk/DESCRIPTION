@@ -1,7 +1,7 @@
 Package: pdapply
 Type: Package
 Title: Parallel list and data-frame apply.
-Version: 1.0
+Version: 1.1
 Date: 2006-05-16
 Author: Aaron A. King <kingaa@umich.edu>
 Maintainer: Aaron A. King <kingaa@umich.edu>
