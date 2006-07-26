@@ -1,6 +1,7 @@
 require(Rmpi)
 
-pdapply <- function (fun, pars, common=list(), info=T) { # row-by-row data.frame apply (parallel version)
+## row-by-row data.frame apply (parallel version)
+pdapply <- function (fun, pars, common = list(), info = T) {
   fn <- deparse(substitute(fun))
   mpi.remote.exec(pdapply.slave,fn,common,ret=F)
   result <- data.frame()
@@ -28,7 +29,10 @@ pdapply <- function (fun, pars, common=list(), info=T) { # row-by-row data.frame
       slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1] + 1
       print(slaveinfo)
     } else {
-      warning(paste('slave',format(src),'reports:',res))
+      if (info)
+        message('slave ',format(src),' reports: ',res)
+      else
+        warning('slave ',format(src),' reports: ',res)
     }
     if (sent < nrow(pars)) {
       sent <- sent+1
@@ -93,7 +97,10 @@ plapply <- function (fun, pars, common=list(), info=T) { # parallel lapply
       slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1] + 1
       print(slaveinfo)
     } else {
-      warning(paste('slave',format(src),'reports:',res))
+      if (info)
+        message('slave ',format(src),' reports: ',res)
+      else
+        warning('slave ',format(src),' reports: ',res)
     }
     if (sent < length(pars)) {
       sent <- sent+1
@@ -130,7 +137,8 @@ plapply.slave <- function (fn, common=list()) { # slave procedure for plapply
   detach(common)
 }
 
-sdapply <- function (fun, pars, common=list()) { # row-by-row data.frame apply (serial version)
+## row-by-row data.frame apply (serial version)
+sdapply <- function (fun, pars, common=list(), info = T) { 
   fn <- substitute(fun)
   result <- data.frame()
   wrap.fn <- function (x) eval(fn,envir=x)
@@ -143,7 +151,10 @@ sdapply <- function (fun, pars, common=list()) { # row-by-row data.frame apply (
     if (!(inherits(res,'try-error'))) {
       result <- rbind(result,res)
     } else {
-      warning(paste('sdapply reports:',res))
+      if (info)
+        message('sdapply reports: ', res)
+      else
+        warning('sdapply reports: ', res)
     }
   }
   detach(common)
