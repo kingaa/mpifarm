@@ -12,7 +12,7 @@ frame.
 \usage{
 pdapply(fun, pars, common = list(), info = T)
 plapply(fun, pars, common = list(), info = T)
-sdapply(fun, pars, common = list())
+sdapply(fun, pars, common = list(), info = T)
 plapply.slave(fn, common=list())
 pdapply.slave(fn, common=list())
 }
