@@ -32,6 +32,30 @@ pdapply.slave(fn, common=list())
 \author{Aaron A. King}
 \note{}
 \seealso{}
-\examples{}
+\examples{
+  \dontrun{
+    require(Rmpi)
+    mpi.spawn.Rslaves(needlog=F)
+    
+    require(pdapply)
+
+    x <- data.frame(a=1:50,b=101:150)
+    y <- pdapply(a+b,x)
+    print(y)
+    y <- pdapply({if(runif(1)<0.5)stop('help');a+b},x)
+    print(y)
+
+    x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
+    y <- plapply(a+b,x)
+    print(y)
+    y <- plapply({if(runif(1)<0.5)stop('yikes');a+b},x)
+    print(y)
+    y <- plapply({if(runif(1)<0.5)stop('yikes');a+b},x,info=F)
+    print(y)
+
+    warnings()
+    mpi.close.Rslaves()
+  }
+}
 \keyword{programming}
 \keyword{utilities}
