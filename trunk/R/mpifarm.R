@@ -1,9 +1,36 @@
-require(Rmpi)
+pdapply.slave <- function (fn, common=list()) { # slave procedure for pdapply
+  fun <- parse(text=fn)
+  wrap.fn <- function (x) eval(fun,envir=x)
+  go <- TRUE
+  attach(common,warn.conflicts=FALSE)
+  while (go) {
+    pars <- mpi.recv.Robj(source=0,tag=mpi.any.tag())
+    if (mpi.get.sourcetag()[2] == 3) {
+      result <- try(
+                    cbind(before=pars,after=wrap.fn(pars)),
+                    silent=T
+                    )
+      if (inherits(result,'try-error')) {
+        tag <- 66
+      } else {
+        tag <- 33
+      }
+      mpi.send.Robj(result,dest=0,tag=tag)
+    } else {
+      go <- FALSE                       # terminate
+    }
+  }
+  detach(common)
+}
 
 ## row-by-row data.frame apply (parallel version)
-pdapply <- function (fun, pars, common = list(), info = T) {
-  fn <- deparse(substitute(fun))
-  mpi.remote.exec(pdapply.slave,fn,common,ret=F)
+pdapply <- function (job, pars, common = list(), info = TRUE) {
+  if (mpi.comm.size() < 2)
+    stop("pdapply: no slaves running")
+  mpi.bcast.Robj2slave(pdapply.slave)
+  mpi.bcast.cmd(if(!exists('.Random.seed')) runif(1))
+  fn <- deparse(substitute(job))
+  mpi.remote.exec(pdapply.slave,fn,common,ret=FALSE)
   result <- data.frame()
   sent <- 0
   rcvd <- 0
@@ -27,7 +54,8 @@ pdapply <- function (fun, pars, common = list(), info = T) {
       result <- rbind(result,res)
       slaveinfo[1,src] <- slaveinfo[1,src] + 1
       slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1] + 1
-      print(slaveinfo)
+      if (info)
+        print(slaveinfo)
     } else {
       if (info)
         message('slave ',format(src),' reports: ',res)
@@ -44,16 +72,16 @@ pdapply <- function (fun, pars, common = list(), info = T) {
   result
 }
 
-pdapply.slave <- function (fn, common=list()) { # slave procedure for pdapply
+plapply.slave <- function (fn, common=list()) { # slave procedure for plapply
   fun <- parse(text=fn)
   wrap.fn <- function (x) eval(fun,envir=x)
   go <- TRUE
-  attach(common,warn.conflicts=F)
+  attach(common,warn.conflicts=FALSE)
   while (go) {
     pars <- mpi.recv.Robj(source=0,tag=mpi.any.tag())
     if (mpi.get.sourcetag()[2] == 3) {
       result <- try(
-                    cbind(before=pars,after=wrap.fn(pars)),
+                    wrap.fn(pars),
                     silent=T
                     )
       if (inherits(result,'try-error')) {
@@ -69,9 +97,13 @@ pdapply.slave <- function (fn, common=list()) { # slave procedure for pdapply
   detach(common)
 }
 
-plapply <- function (fun, pars, common=list(), info=T) { # parallel lapply
-  fn <- deparse(substitute(fun))
-  mpi.remote.exec(plapply.slave,fn,common,ret=F)
+plapply <- function (job, pars, common=list(), info=TRUE) { # parallel lapply
+  if (mpi.comm.size() < 2)
+    stop("plapply: no slaves running")
+  mpi.bcast.Robj2slave(plapply.slave)
+  mpi.bcast.cmd(if(!exists('.Random.seed')) runif(1))
+  fn <- deparse(substitute(job))
+  mpi.remote.exec(plapply.slave,fn,common,ret=FALSE)
   result <- vector('list',length(pars))
   sent <- 0
   rcvd <- 0
@@ -95,7 +127,8 @@ plapply <- function (fun, pars, common=list(), info=T) { # parallel lapply
       result[[rcvd]] <- res
       slaveinfo[1,src] <- slaveinfo[1,src] + 1
       slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1] + 1
-      print(slaveinfo)
+      if (info)
+        print(slaveinfo)
     } else {
       if (info)
         message('slave ',format(src),' reports: ',res)
@@ -112,34 +145,9 @@ plapply <- function (fun, pars, common=list(), info=T) { # parallel lapply
   result
 }
 
-plapply.slave <- function (fn, common=list()) { # slave procedure for plapply
-  fun <- parse(text=fn)
-  wrap.fn <- function (x) eval(fun,envir=x)
-  go <- TRUE
-  attach(common,warn.conflicts=F)
-  while (go) {
-    pars <- mpi.recv.Robj(source=0,tag=mpi.any.tag())
-    if (mpi.get.sourcetag()[2] == 3) {
-      result <- try(
-                    wrap.fn(pars),
-                    silent=T
-                    )
-      if (inherits(result,'try-error')) {
-        tag <- 66
-      } else {
-        tag <- 33
-      }
-      mpi.send.Robj(result,dest=0,tag=tag)
-    } else {
-      go <- FALSE                       # terminate
-    }
-  }
-  detach(common)
-}
-
 ## row-by-row data.frame apply (serial version)
-sdapply <- function (fun, pars, common=list(), info = T) { 
-  fn <- substitute(fun)
+sdapply <- function (job, pars, common=list(), info = TRUE) { 
+  fn <- substitute(job)
   result <- data.frame()
   wrap.fn <- function (x) eval(fn,envir=x)
   attach(common)
