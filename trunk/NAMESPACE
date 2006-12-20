@@ -1,1 +1,1 @@
-export(pdapply,pdapply.slave,plapply,plapply.slave,sdapply)
+export(mpi.farm,mpi.farm.slave,farm)

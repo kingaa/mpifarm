@@ -1,38 +1,32 @@
-\name{pdapply}
-\alias{pdapply}
-\alias{plapply}
-\alias{sdapply}
-\alias{plapply.slave}
-\alias{pdapply.slave}
-\title{Parallel row-by-row data-frame and list apply.}
+\name{mpi.farm}
+\alias{mpi.farm}
+\alias{mpi.farm.slave}
+\alias{farm}
+\title{Farm out jobs across a cluster using MPI}
 \description{
-  Apply a procedure (an arbitrary block of R-code) to each row of a data
-  frame or each element of a list.
+  Farm out a procedure (an arbitrary block of R-code) to a cluster of
+  slaves, with different values of the variables.
 }
 \usage{
-pdapply(job, pars, common = list(), info = TRUE)
-sdapply(job, pars, common = list(), info = TRUE)
-plapply(job, pars, common = list(), info = TRUE)
-plapply.slave(fn, common=list())
-pdapply.slave(fn, common=list())
+mpi.farm(proc, joblist, common = list(), info = TRUE)
+farm(proc, joblist, common = list(), info = TRUE)
+mpi.farm.slave(fn, common=list())
 }
 \arguments{
-  \item{job}{An arbitrary block of R code}
-  \item{pars}{A data frame (in the case of \code{pdapply} and
-    If R slaves have been started (using e.g.,
-    \code{sdapply}) or list (in the case of \code{plapply}) defining
-    variables.}
-  \item{common}{A list of other variables held constant.}
+  \item{proc}{An arbitrary block of R code}
+  \item{joblist}{A list of named lists.  Each element is a named list to
+    be treated as an environment defining some or all of the variables
+    in \code{proc}.}
+  \item{common}{An optional list of variables common to all the jobs.}
   \item{info}{Print information on the progress of the slaves?}
-  \item{fn}{An arbitrary block of R code.}
+  \item{fn}{A arbitrary block of R code, deparsed to a string.}
 }
 \details{
-  \code{pdapply.slave} and \code{plapply.slave} do the work on the
-  slaves and should never need to be called by the user.  However, these
-  functions must be broadcast to the slaves, so that they will be able
-  to do their part!  \code{pdapply} and \code{plapply} broadcast the
-  appropriate one of these functions to the slaves before beginning to
-  assign jobs.
+  \code{mpi.farm.slave} does the work on the slaves and should never
+  need to be called by the user.  However, this function must be
+  broadcast to the slaves, so that they will be able to do their part!
+  \code{mpi.farm} broadcasts the \code{mpi.farm.slave} to the slaves
+  before beginning to assign jobs.
 
   For many of the applications envisioned, the jobs the slaves are
   assigned involve stochastic simulations.  Because of the way that R
@@ -44,19 +38,19 @@ pdapply.slave(fn, common=list())
   even identical.
 
   For this reason, it is a good idea to set the seed of the RNG as part
-  of the block of code \code{job}.  Storing the state of the RNG before
+  of the block of code \code{proc}.  Storing the state of the RNG before
   doing so is often desirable, but this can be frustrating if the RNG
-  has not been initialized.  \code{pdapply} and \code{plapply} check to
-  see if \code{.Random.seed} exists and, if it does not, initialize the
-  RNG with a call to \code{runif}.  Thus, the user is guaranteed that
-  the RNG has been initialized on each slave.
+  has not been initialized.  \code{mpi.farm} checks to see if
+  \code{.Random.seed} exists and, if it does not, initializes the RNG
+  with a call to \code{runif}.  Thus, the user is guaranteed that the
+  RNG has been initialized on each slave.
 }
 \value{
-  The value returned by \code{pdapply} is a data-frame (DESCRIBE).
-  The value returned by \code{plapply} is a list (DESCRIBE).
-  Note that the order of elements is the order in which the results were
-  received from the slaves and may not correspond to the order in the
-  \code{pars} argument.
+  The value returned by \code{mpi.farm} and \code{farm} is a list with
+  one entry for each of the elements in \code{joblist}.  Note that the
+  order of elements is the order in which the results were received from
+  the slaves and may not correspond to the order in the \code{joblist}
+  argument.
 }
 \author{Aaron A. King}
 \note{}
@@ -65,21 +59,17 @@ pdapply.slave(fn, common=list())
   \dontrun{
     require(Rmpi)
     mpi.spawn.Rslaves(needlog=F)
-    
-    require(pdapply)
 
-    x <- data.frame(a=1:50,b=101:150)
-    y <- pdapply(a+b,x)
-    print(y)
-    y <- pdapply({if(runif(1)<0.5)stop('help');a+b},x)
-    print(y)
+    require(mpifarm)
 
     x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
-    y <- plapply(a+b,x)
+    y <- mpi.farm(a+b,x)
     print(y)
-    y <- plapply({if(runif(1)<0.5)stop('yikes');a+b},x)
+
+    y <- mpi.farm({if(runif(1)<0.5)stop('yikes');a+b},x)
     print(y)
-    y <- plapply({if(runif(1)<0.1)stop('yikes');a+b},x,info=F)
+
+    y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+b},x,info=F)
     print(y)
 
     warnings()
