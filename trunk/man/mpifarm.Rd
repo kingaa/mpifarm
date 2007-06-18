@@ -8,7 +8,7 @@
   slaves, with different values of the variables.
 }
 \usage{
-mpi.farm(proc, joblist, common = list(), info = TRUE)
+mpi.farm(proc, joblist, common = list(), stop.condition = TRUE, info = TRUE)
 farm(proc, joblist, common = list(), info = TRUE)
 mpi.farm.slave(fn, common=list())
 }
@@ -18,6 +18,15 @@ mpi.farm.slave(fn, common=list())
     be treated as an environment defining some or all of the variables
     in \code{proc}.}
   \item{common}{An optional list of variables common to all the jobs.}
+  \item{stop.condition}{This will be evaluated in the context of
+    the return-value of \code{proc}.  For this option to have an effect,
+    \code{proc} must return a named list and \code{stop.condition} must
+    evaluate to \code{TRUE} or \code{FALSE} in the context of that list.
+    If it evaluates to \code{FALSE}, the return-value of \code{proc} is
+    appended to \code{joblist}.  This allows one to complete the
+    calcuation in several steps, which in turn allows for more effective
+    load-balancing.  If the return-value of \code{proc} is not a list,
+    this option has no effect.}
   \item{info}{Print information on the progress of the slaves?}
   \item{fn}{A arbitrary block of R code, deparsed to a string.}
 }
@@ -57,10 +66,7 @@ mpi.farm.slave(fn, common=list())
 \seealso{}
 \examples{
   \dontrun{
-    require(Rmpi)
     mpi.spawn.Rslaves(needlog=F)
-
-    require(mpifarm)
 
     x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
     y <- mpi.farm(a+b,x)
@@ -71,8 +77,11 @@ mpi.farm.slave(fn, common=list())
 
     y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+b},x,info=F)
     print(y)
-
     warnings()
+
+    x <- lapply(1:100,function(k)list(a=k,b=0,done=0))
+    y <- mpi.farm({b <- b+rnorm(1); list(a=a,b=b,done=done+1)},x,stop.condition=((abs(b)>2)|(done>10)))
+
     mpi.close.Rslaves()
   }
 }
