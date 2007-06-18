@@ -1,0 +1,79 @@
+2006-12-19  Aaron King  <kingaa@ilex.biology.lsa.umich.edu>
+
+	* DESCRIPTION, Makefile, NAMESPACE, mpifarm.R, mpifarm.Rd:
+	renamed "mpi.farm"
+
+2006-12-19  Aaron King  <kingaa@populus.biology.lsa.umich.edu>
+
+	* DESCRIPTION, Makefile, NAMESPACE, mpifarm.R, mpifarm.Rd:
+	renamed "mpi.farm"
+
+2006-08-17  Aaron King  <kingaa@populus.biology.lsa.umich.edu>
+
+	* DESCRIPTION, mpifarm.R, mpifarm.Rd:
+	the slave routines are farmed out automatically
+	the RNGs are initialized if they are not already
+	better documentation
+	an example (not run) is provided
+	pdapply and plapply will return an error if no slaves are running (mpi.comm.size() < 2)
+
+2006-08-17  Aaron A. King  <kingaa@quercus.biology.lsa.umich.edu>
+
+	* DESCRIPTION, pdapply.R, pdapply.Rd:
+	the slave routines are farmed out automatically
+	the RNGs are initialized if they are not already
+	better documentation
+	an example (not run) is provided
+	pdapply and plapply will return an error if no slaves are running (mpi.comm.size() < 2)
+
+2006-08-16  Aaron A. King  <kingaa@quercus.biology.lsa.umich.edu>
+
+	* pdapply.Rd: an example (not run) is now included
+
+2006-07-26  Aaron A. King  <kingaa@quercus.biology.lsa.umich.edu>
+
+	* DESCRIPTION: better information when info=T
+
+	* pdapply.R: better information during runs
+
+	* pdapply.Rd, Makefile: *** empty log message ***
+
+2006-07-26  Aaron A. King  <kingaa@quercus.biology.lsa.umich.edu>
+
+	* DESCRIPTION: better information when info=T
+
+	* pdapply.R: better information during runs
+
+	* pdapply.Rd, Makefile: *** empty log message ***
+
+2006-07-26  Aaron A. King  <kingaa@quercus.biology.lsa.umich.edu>
+
+	* DESCRIPTION: better information when info=T
+
+	* pdapply.R: better information during runs
+
+	* pdapply.Rd, Makefile: *** empty log message ***
+
+2006-05-23  Aaron A. King  <kingaa@quercus.biology.lsa.umich.edu>
+
+	* DESCRIPTION: *** empty log message ***
+
+	* Makefile: New file.
+
+	* pdapply.R, pdapply.Rd: *** empty log message ***
+
+	* DESCRIPTION, NAMESPACE: New file.
+
+	* pdapply.Rd: *** empty log message ***
+
+2006-05-23  Aaron A. King  <kingaa@alnus.biology.lsa.umich.edu>
+
+	* aaa.R: New file.
+
+	* pdapply.Rd: *** empty log message ***
+
+2006-05-16  Aaron A. King  <kingaa@alnus.biology.lsa.umich.edu>
+
+	* pdapply.R, plapply.R, sdapply.R, pdapply.Rd, pdapply.package.Rd, plapply.Rd, sdapply.Rd:
+	New file.
+
