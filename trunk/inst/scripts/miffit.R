@@ -3,10 +3,10 @@
 ## a script for running multiple MIFs using Rmpi and mpifarm
 
 ## set some default values
-nreps <- 2                           # number of replicate MIFs to run
+nreps <- 2         # number of replicate MIFs to run per parameter set
+nmifs <- 80                       # total number of MIFs per replicate
 unweighted <- 0                  # number of unweighted MIF iterations
 max.fail <- 100 # maximum number of filtering failures before an error is triggered
-nmifs <- 80                       # total number of MIFs per replicate
 gran <- 4                               # granularity (MIFs per chunk)
 
 nparticles <- 10000                     # pfilter's Np
@@ -18,17 +18,23 @@ init.disp <- 0           # initial displacement of starting conditions
 filter.q <- TRUE   # estimate the loglikelihood after all the MIFfing?
 nfilters <- 10 # number of independent particle filter runs used to estimate the log likelihood
 
-soname <- NULL                          # this must be set to the stem-name of the SO library
-jobname <- NULL                         # this must be set to something or other
-datadir <- paste("/state/partition1/",system("whoami",intern=T),"/",sep="") # scratch directory
+jobname <- NULL           # this must be set by a commandline argument
+scratchdir <- paste("/state/partition1/",system("whoami",intern=T),"/",sep="") # scratch directory
+
+modelRfile <- NULL # file where 'transform.fn' and 'make.pomp' are defined
+solib <- NULL # if this is set to the stem-name of the SO library, the library will be loaded
 
 ## get, parse, and evaluate the command-line arguments
 eval(parse(text=commandArgs(trailingOnly=TRUE)))
 
 if (is.null(jobname))
   stop("you must supply a ",sQuote("jobname"))
-if (is.null(soname))
-  stop("you must supply a ",sQuote("soname"))
+
+if (!is.null(solib) && !file.exists(solib))
+  stop("file ",sQuote(solib)," not found")
+
+if (!file.exists(modelRfile))
+  stop("file ",sQuote(modelRfile)," not found")
 
 ## the following cannot be changed by commandline arguments
 id <- paste(basename(getwd()),jobname,sep='_') # an identifier for the files to be saved
@@ -37,37 +43,35 @@ mpfile <- paste('modelparams_',jobname,'.csv',sep='') # input parameter file
 bestfile <- paste('best_',jobname,'.csv',sep='') # CSV file to store MLEs
 mlefile <- paste('mle_',jobname,'.rda',sep='') # binary file to store MLEs
 
-soRfile <- paste(soname,".R",sep='')    # model specification file
-solib <- paste(soname,".so",sep='')     # model shared-object library
-
-if (!file.exists(soRfile))
-  stop("file ",sQuote(soRfile)," not found")
-if (!file.exists(solib))
-  stop("file ",sQuote(solib)," not found")
-
 require(Rmpi)
 mpi.spawn.Rslaves(needlog=F)
 require(mpifarm)
 
-require(pomp.devel)
-source(soRfile)         # model-specific codes, loading data, etc.
+require(pomp)
 
-if (file.exists(imagefile)) {    # we are continuing where we left off
+if (!file.exists(modelRfile))
+  stop("file ",sQuote(modelRfile)," not found")
+source(modelRfile)         # model-specific codes, loading data, etc.
+if (!(exists("transform.fn")&&exists("make.pomp")))
+  stop("file ",sQuote(modelRfile)," does not define ",sQuote("transform.fn")," and ",sQuote("make.pomp")," as it should")
+
+if (file.exists(imagefile)) {   # we are continuing where we left off?
 
   load(imagefile)
 
 } else {                                # we are starting from scratch
 
-  parameters <- read.csv(file=mpfile)   # read the input parameter file
+  ## read the input parameter file
+  parameters <- read.csv(file=mpfile)   
 
-                                        # fetch out the random-walk SDs
+  ## fetch out the random-walk SDs
   sigma <- parameters[parameters$dataset=='sd',]
   sigma$dataset <- NULL
   sigma$model <- NULL
   sigma <- unlist(sigma) 
   sigma <- log(1+sigma)
 
-                                        # fetch out the dataset and model names
+  ## fetch out the dataset and model names
   parameters <- parameters[parameters$dataset!='sd',]
   datasets <- as.character(parameters$dataset)
   parameters$dataset <- NULL
@@ -85,10 +89,10 @@ if (file.exists(imagefile)) {    # we are continuing where we left off
   joblist <- vector(mode='list',length=njobs)
   count <- 0
   for (d in seq(length=ndsets)) {
-    theta.guess <- unlist(parameters[d,])
+    theta.guess <- unlist(parameters[d,]) # extract the starting (guess) parameters
     sig <- sigma[is.finite(theta.guess)&(sigma>0)] # the random-walk SDs
-    theta.guess <- theta.guess[is.finite(theta.guess)]
-    par.trans <- transform.fn(model=models[d],dir='transform')
+    theta.guess <- theta.guess[is.finite(theta.guess)] # only finite guesses play any role
+    par.trans <- transform.fn(model=models[d],dir='transform') # transform parameters
     theta.guess <- par.trans(theta.guess)
     theta.x <- matrix(
                       data=theta.guess,
@@ -133,18 +137,18 @@ if (file.exists(imagefile)) {    # we are continuing where we left off
                                )
     }
   }
-}
 
-save(list='joblist',file=imagefile)
+  save(list='joblist',file=imagefile)
+}
 
 tic <- Sys.time()
 
 joblist <- mpi.farm(
-                    {
-                      require(pomp.devel)
+                    { # this is the expression to be evaluated on each slave
+                      require(pomp)
                       ## name of a file in which to save checkpoints
-                      ckptfile <- file.path(datadir,paste(dataset,'_',id,'_',done,'_',seed,'.rda',sep=''))
-                      dyn.load(solib) # load the SO library
+                      ckptfile <- file.path(scratchdir,paste(dataset,'_',id,'_',done,'_',seed,'.rda',sep=''))
+                      if (!is.null(solib)) dyn.load(solib) # load the SO library
                       if (done < nmifs) { # continue MIFfing
                         save.seed <- .Random.seed
                         .Random.seed <<- rngstate
@@ -175,7 +179,7 @@ joblist <- mpi.farm(
                       } else {          # nothing to do
                         all.done <- TRUE
                       }
-                      dyn.unload(solib) # unload the SO library
+                      if (!is.null(solib)) dyn.unload(solib) # unload the SO library
                       result <- list(
                                      mle=mle,
                                      model=model,
@@ -192,7 +196,7 @@ joblist <- mpi.farm(
                     },
                     joblist=joblist,    # the list of jobs
                     common=list( # variables that have the same value across jobs
-                      datadir=datadir,
+                      scratchdir=scratchdir,
                       id=id,
                       unweighted=unweighted,
                       max.fail=max.fail,
@@ -232,7 +236,8 @@ x <- Reduce(
                    )
             )
 
-best.ind <- tapply(1:nrow(x),x$dataset,function(k)k[which.max(x$loglik[k])])
+## extract the best likelihood for each dataset/model combination
+best.ind <- tapply(1:nrow(x),list(x$dataset,x$model),function(k)k[which.max(x$loglik[k])])
 best <- x[best.ind,]
 best <- best[order(as.character(best$dataset)),]
 write.csv(best,file=bestfile,row.names=FALSE,na="")
