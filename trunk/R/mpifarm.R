@@ -100,27 +100,3 @@ mpi.farm.slave <- function (fn, common=list()) { # slave procedure for mpi.farm
   }
   detach(common)
 }
-
-## serial version
-farm <- function (proc, joblist, common=list(), info = TRUE) { 
-  if (!exists('.Random.seed')) runif(1)
-  fun <- substitute(proc)
-  result <- vector('list',length(joblist))
-  attach(common)
-  for (j in 1:length(joblist)) {
-    res <- try(
-               eval(fun,envir=joblist[[j]]),
-               silent=T
-               )
-    if (!(inherits(res,'try-error'))) {
-      result[[j]] <- res
-    } else {
-      if (info)
-        message('sdapply reports: ', res)
-      else
-        warning('sdapply reports: ', res)
-    }
-  }
-  detach(common)
-  result
-}
