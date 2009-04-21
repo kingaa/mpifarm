@@ -19,7 +19,7 @@ filter.q <- TRUE   # estimate the loglikelihood after all the MIFfing?
 nfilters <- 10 # number of independent particle filter runs used to estimate the log likelihood
 
 jobname <- NULL           # this must be set by a commandline argument
-scratchdir <- paste("/state/partition1/",system("whoami",intern=T),"/",sep="") # scratch directory
+scratchdir <- paste("/scratch/",system("whoami",intern=T),"/",sep="") # scratch directory
 
 modelRfile <- NULL # file where 'transform.fn' and 'make.pomp' are defined
 solib <- NULL # if this is set to the stem-name of the SO library, the library will be loaded
