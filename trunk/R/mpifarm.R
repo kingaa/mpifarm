@@ -11,7 +11,7 @@ mpi.farm <- function (proc, joblist, common=list(),
   result <- vector(mode='list',length=0)
   nslave <- mpi.comm.size()-1
   if (nslave > length(joblist)) {
-    warning("more slaves than jobs, killing unneeded slaves")
+    warning("mpi.farm warning: more slaves than jobs, killing unneeded slaves",call.=FALSE)
     for (d in seq(from=length(joblist)+1,to=nslave,by=1)) {
       mpi.send.Robj(0,dest=d,tag=666)   # kill unneeded slaves
     }
@@ -31,13 +31,14 @@ mpi.farm <- function (proc, joblist, common=list(),
                       )
   sent <- 0
   rcvd <- 0
-  for (d in live) {                 # initialize the queue
-    if (sent < length(joblist)) {     # farm out the work
+  for (d in live) {                     # initialize the queue
+    if (length(joblist)>0) {            # farm out the work
       sent <- sent+1
-      mpi.send.Robj(joblist[[sent]],dest=d,tag=3)
+      mpi.send.Robj(joblist[[1]],dest=d,tag=3) # pop the next job off the stack and send it out
+      joblist[[1]] <- NULL
     }
   }
-  while (rcvd < length(joblist)) {
+  while (rcvd < sent) {
     res <- mpi.recv.Robj(source=mpi.any.source(),tag=mpi.any.tag()) # wait for someone to finish
     srctag <- mpi.get.sourcetag()
     src <- srctag[1]                    # who did it?
@@ -47,14 +48,14 @@ mpi.farm <- function (proc, joblist, common=list(),
       slaveinfo[1,src] <- slaveinfo[1,src]+1
       slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1]+1
       if (info) print(slaveinfo)
-      if (is.list(res)) {
+      if (is.list(res)) {         # are we all finished with this job?
         stq <- as.logical(eval(parse(text=stop.condn),envir=res))
       } else {
         stq <- TRUE
       }
       if (is.na(stq))
         stop("'stop.condition' must evaluate to TRUE or FALSE")
-      if (stq) { # should we stop?
+      if (stq) {                        # should we stop?
         result <- append(result,list(res))
       } else {
         joblist <- append(joblist,list(res))
@@ -63,13 +64,15 @@ mpi.farm <- function (proc, joblist, common=list(),
       if (info)
         message('slave ',format(src),' reports: ',res)
       else
-        warning('slave ',format(src),' reports: ',res)
+        warning('mpi.farm: slave ',format(src),' reports: ',res,call.=FALSE)
+      result <- append(result,list(res))
     }
-    if (sent < length(joblist)) {       # is there more to do?
+    if (length(joblist)>0) {       # is there more to do?
       sent <- sent+1
-      mpi.send.Robj(joblist[[sent]],dest=src,tag=3) # send out another job
-    } else {
-      mpi.send.Robj(0,dest=src,tag=666) # else kill the slave
+      mpi.send.Robj(joblist[[1]],dest=src,tag=3) # pop the next job off the stack and send it out
+      joblist[[1]] <- NULL
+    } else {                            # if not, kill the slave
+      mpi.send.Robj(0,dest=src,tag=666)
       live <- live[live!=src]
     }
   }
@@ -86,7 +89,7 @@ mpi.farm.slave <- function (fn, common=list()) { # slave procedure for mpi.farm
     if (srctag[2] == 3) {               # we have a job to do
       result <- try(
                     eval(proc,envir=pars),
-                    silent=T
+                    silent=TRUE
                     )
       if (inherits(result,'try-error')) {
         tag <- 66                       # error

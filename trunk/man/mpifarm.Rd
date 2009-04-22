@@ -4,62 +4,44 @@
 \alias{farm}
 \title{Farm out jobs across a cluster using MPI}
 \description{
-  Farm out a procedure (an arbitrary block of R-code) to a cluster of
-  slaves, with different values of the variables.
+  Farm out a procedure (an arbitrary block of R-code) to a cluster of slaves, with different values of the variables.
 }
 \usage{
 mpi.farm(proc, joblist, common = list(), stop.condition = TRUE, info = TRUE)
-farm(proc, joblist, common = list(), info = TRUE)
+farm(proc, joblist, common = list(), stop.condition = TRUE, info = TRUE)
 mpi.farm.slave(fn, common=list())
 }
 \arguments{
   \item{proc}{An arbitrary block of R code}
-  \item{joblist}{A list of named lists.  Each element is a named list to
-    be treated as an environment defining some or all of the variables
-    in \code{proc}.}
+  \item{joblist}{
+    A list of named lists.
+    Each element is a named list to be treated as an environment defining some or all of the variables in \code{proc}.}
   \item{common}{An optional list of variables common to all the jobs.}
-  \item{stop.condition}{This will be evaluated in the context of
-    the return-value of \code{proc}.  For this option to have an effect,
-    \code{proc} must return a named list and \code{stop.condition} must
-    evaluate to \code{TRUE} or \code{FALSE} in the context of that list.
-    If it evaluates to \code{FALSE}, the return-value of \code{proc} is
-    appended to \code{joblist}.  This allows one to complete the
-    calcuation in several steps, which in turn allows for more effective
-    load-balancing.  If the return-value of \code{proc} is not a list,
-    this option has no effect.}
+  \item{stop.condition}{
+    This will be evaluated in the context of the return-value of \code{proc}.
+    For this option to have an effect, \code{proc} must return a named list and \code{stop.condition} must evaluate to \code{TRUE} or \code{FALSE} in the context of that list.
+    If it evaluates to \code{FALSE}, the return-value of \code{proc} is appended to \code{joblist}.
+    This allows one to complete the calcuation in several steps, which in turn allows for more effective load-balancing.
+    If the return-value of \code{proc} is not a list, this option has no effect.
+  }
   \item{info}{Print information on the progress of the slaves?}
   \item{fn}{A arbitrary block of R code, deparsed to a string.}
 }
 \details{
-  \code{mpi.farm.slave} does the work on the slaves and should never
-  need to be called by the user.  However, this function must be
-  broadcast to the slaves, so that they will be able to do their part!
-  \code{mpi.farm} broadcasts the \code{mpi.farm.slave} to the slaves
-  before beginning to assign jobs.
+  \code{mpi.farm.slave} does the work on the slaves and should never need to be called by the user.
+  This function is broadcast to the slaves, so that they will be able to do their part.
+  \code{mpi.farm} broadcasts the \code{mpi.farm.slave} to the slaves before beginning to assign jobs.
 
-  For many of the applications envisioned, the jobs the slaves are
-  assigned involve stochastic simulations.  Because of the way that R
-  initializes its pseudorandom number generators (RNGs), it is easy to make the
-  mistake of failing to initialize the RNGs on different slaves to
-  different states.  If one fails to do this (and doesn't use a
-  sophisticated parallel RNG like SPRNG) then it is possible that the
-  random numbers generated on different slaves will be correlated or
-  even identical.
+  For many of the applications envisioned, the jobs the slaves are assigned involve stochastic simulations.
+  Because of the way that R initializes its pseudorandom number generators (RNGs), it is easy to make the mistake of failing to initialize the RNGs on different slaves to different states.
+  If one fails to do this (and doesn't use a sophisticated parallel RNG like SPRNG) then it is possible that the random numbers generated on different slaves will be correlated or even identical.
 
-  For this reason, it is a good idea to set the seed of the RNG as part
-  of the block of code \code{proc}.  Storing the state of the RNG before
-  doing so is often desirable, but this can be frustrating if the RNG
-  has not been initialized.  \code{mpi.farm} checks to see if
-  \code{.Random.seed} exists and, if it does not, initializes the RNG
-  with a call to \code{runif}.  Thus, the user is guaranteed that the
-  RNG has been initialized on each slave.
+  For this reason, it is a good idea to set the seed of the RNG as part of the block of code \code{proc}.
+  Storing the state of the RNG before doing so is often desirable, but this can be frustrating if the RNG has not been initialized.  \code{mpi.farm} checks to see if \code{.Random.seed} exists and, if it does not, initializes the RNG with a call to \code{runif}.  Thus, the user is guaranteed that the RNG has been initialized on each slave.
 }
 \value{
-  The value returned by \code{mpi.farm} and \code{farm} is a list with
-  one entry for each of the elements in \code{joblist}.  Note that the
-  order of elements is the order in which the results were received from
-  the slaves and may not correspond to the order in the \code{joblist}
-  argument.
+  The value returned by \code{mpi.farm} and \code{farm} is a list with one entry for each of the elements in \code{joblist}.
+  Note that the order of elements is the order in which the results were received from the slaves and may not correspond to the order in the \code{joblist} argument.
 }
 \author{Aaron A. King}
 \note{}

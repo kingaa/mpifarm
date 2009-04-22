@@ -2,7 +2,7 @@ require(Rmpi)
 mpi.spawn.Rslaves(needlog=T)
 require(mpifarm)
 nslave <- mpi.comm.size()-1
-nper <- 500
+nper <- 50
 nrand <- 1000
 args <- commandArgs(TRUE)
 eval(parse(text=args))
@@ -19,7 +19,7 @@ job.result <- mpi.farm(
                         toc <- Sys.time()
                         .Random.seed <<- save.seed
                         me <- mpi.comm.rank()
-                        c(slave=me,time=toc-tic,mean=mean(x),sd=sd(x))
+                        c(slave=me,time=toc-tic,mean=mean(x),sd=sd(x),n=length(x))
                       },
                       job.list,
                       common=list(
