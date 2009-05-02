@@ -174,7 +174,10 @@ results <- mpi.farm(
                         .Random.seed <<- rngstate
                         ff <- lapply(
                                      seq(length=nfilters),
-                                     function(n)pfilter(mle,max.fail=max.fail)
+                                     function(n)pfilter(
+                                                        mle,
+                                                        max.fail=max.fail
+                                                        )
                                      )
                         nfail <- sapply(ff,function(x)x$nfail)
                         loglik <- sapply(ff,function(x)x$loglik)
@@ -223,16 +226,17 @@ mpi.exit()
 
 noerr <- !sapply(results,function(x)inherits(x,'try-error'))
 joblist <- results[noerr]
-print(results[!noerr])
+err <- results[!noerr]
+if (length(err)>0) print(err)
 
-save(list=c('joblist','results'),file=imagefile)
+save(list=c('joblist','err'),file=imagefile)
 
 ## collate the results for storage in a CSV file
 if (filter.q) {
   x <- Reduce(
               function(x,y)merge(x,y,all=T),
               lapply(
-                     results[noerr],
+                     joblist,
                      function (x) {
                        cbind(
                              data.frame(
@@ -249,20 +253,9 @@ if (filter.q) {
                      )
               )
 
-  ## extract the best likelihood for each dataset/model combination
-  best.ind <- tapply(1:nrow(x),list(x$dataset,x$model),function(k)k[which.max(x$loglik[k])])
-  best <- x[best.ind,]
-  best <- best[order(as.character(best$dataset)),]
-  write.csv(best,file=bestfile,row.names=FALSE,na="")
+  x <- x[order(x$dataset,x$model,-x$loglik),]
+  write.csv(x,file=bestfile,row.names=FALSE,na="")
 
-  ## also save the MIF objects in a binary file
-  mle <- lapply(
-                results[noerr[best.ind]],
-                function(x)x$mle
-                )
-  names(mle) <- sapply(results[noerr[best.ind]],function(x)x$dataset)
-  mle <- mle[order(names(mle))]
-  save(list='mle',file=mlefile)
 }
 
 q(save='no',status=0)
