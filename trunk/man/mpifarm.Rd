@@ -7,7 +7,9 @@
   Farm out a procedure (an arbitrary block of R-code) to a cluster of slaves, with different values of the variables.
 }
 \usage{
-mpi.farm(proc, joblist, common = list(), stop.condition = TRUE, info = TRUE)
+mpi.farm(proc, joblist, common = list(), stop.condition = TRUE, info = TRUE,
+         checkpoint = NULL, checkpoint.file = NULL
+         )
 farm(proc, joblist, common = list(), stop.condition = TRUE, info = TRUE)
 mpi.farm.slave(fn, common=list())
 }
@@ -25,6 +27,16 @@ mpi.farm.slave(fn, common=list())
     If the return-value of \code{proc} is not a list, this option has no effect.
   }
   \item{info}{Print information on the progress of the slaves?}
+  \item{checkpoint}{
+    optional integer specifying the granularity of checkpointing.
+    That is, the checkpoint file will be saved once every \code{checkpoint} jobs from joblist are completed.
+  }
+  \item{checkpoint.file}{
+    optional filename.
+    If \code{checkpoint.file} is specified, then once every \code{checkpoint} jobs are finished, checkpoint information will be saved to a binary-format file with this name.
+    This file will contain two lists: \code{finished}, consisting of those jobs in \code{joblist} that are fully completed and
+    \code{unfinished}, consisting of that portion of \code{joblist} that has not yet been fully finished.
+  }
   \item{fn}{A arbitrary block of R code, deparsed to a string.}
 }
 \details{
@@ -41,7 +53,7 @@ mpi.farm.slave(fn, common=list())
 }
 \value{
   The value returned by \code{mpi.farm} and \code{farm} is a list with one entry for each of the elements in \code{joblist}.
-  Note that the order of elements is the order in which the results were received from the slaves and may not correspond to the order in the \code{joblist} argument.
+  The elements in the result correspond to the elements in the \code{joblist} argument.
 }
 \author{Aaron A. King}
 \note{}
