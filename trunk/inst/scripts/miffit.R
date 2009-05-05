@@ -50,7 +50,7 @@ imagefile <- paste('image_',jobname,'.rda',sep='') # binary file for saving the 
 mpfile <- paste('modelparams_',jobname,'.csv',sep='') # input parameter file
 bestfile <- paste('best_',jobname,'.csv',sep='') # CSV file to store MLEs
 mlefile <- paste('mle_',jobname,'.rda',sep='') # binary file to store MLEs
-checkpointfile <- file.path(scratchdir,"_",id,".rda",sep="")
+checkpointfile <- file.path(scratchdir,paste(id,".rda",sep=""))
 
 require(Rmpi)
 require(mpifarm)
