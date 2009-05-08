@@ -8,7 +8,6 @@ nmifs <- 20                       # total number of MIFs per replicate
 unweighted <- 0                  # number of unweighted MIF iterations
 max.fail <- 100 # maximum number of filtering failures before an error is triggered
 gran <- 5                               # granularity (MIFs per chunk)
-checkpoint <- 10                        # checkpoint granularity
 
 nparticles <- 10000                     # pfilter's Np
 cooling <- 0.99                         # cooling factor
@@ -20,14 +19,19 @@ filter.q <- TRUE   # estimate the loglikelihood after all the MIFfing?
 nfilters <- 10 # number of independent particle filter runs used to estimate the log likelihood
 
 jobname <- NULL           # this must be set by a commandline argument
-scratchdir <- paste("/scratch/",system("whoami",intern=T),"/",sep="") # scratch directory
+modelStem <- NULL
 
-modelRfile <- "cholmodel.R" # file where 'transform.fn' and 'make.pomp' are defined
-modelCfile <- "cholmodel.c" # file where 'transform.fn' and 'make.pomp' are defined
-solib <- "cholmodel.so" # if this is set to the stem-name of the SO library, the library will be loaded
+scratchdir <- paste("/scratch/",system("whoami",intern=T),"/",sep="") # scratch directory
 
 ## get, parse, and evaluate the command-line arguments
 eval(parse(text=commandArgs(trailingOnly=TRUE)))
+
+if (is.null(modelStem)) 
+  stop("you must supply a ",sQuote("modelStem"))
+
+modelRfile <- paste(modelStem,"R",sep=".") # file where 'transform.fn' and 'make.pomp' are defined
+modelCfile <- paste(modelStem,"c",sep=".") # file where 'transform.fn' and 'make.pomp' are defined
+solib <- paste(modelStem,"so",sep=".") # if this is set to the stem-name of the SO library, the library will be loaded
 
 if (is.null(jobname))
   stop("you must supply a ",sQuote("jobname"))
@@ -56,6 +60,8 @@ checkpointfile <- file.path(scratchdir,paste(id,".rda",sep=""))
 require(Rmpi)
 require(mpifarm)
 require(pomp)
+
+if (!exists("checkpoint")) checkpoint <- mpi.universe.size()  # checkpoint granularity
 
 source(modelRfile)         # model-specific codes, loading data, etc.
 if (!(exists("par.trans")&&exists("par.untrans")&&exists("make.pomp")))
@@ -244,8 +250,8 @@ if (filter.q) {
                      function (x) {
                        cbind(
                              data.frame(
-                                        model=x$model,
                                         dataset=x$dataset,
+                                        model=x$model,
                                         loglik=mean(x$loglik),
                                         loglik.sd=sd(x$loglik),
                                         nfail.max=max(x$nfail),
