@@ -102,10 +102,6 @@ if (file.exists(imagefile)) {   # we are continuing where we left off?
   count <- 0
   for (d in seq(length=ndsets)) {
     po <- make.pomp(dataset=datasets[d],model=models[d])               
-    sigma <- sigma[sigma>0] # the random-walk SDs
-    parnames <- names(sigma)
-    ivpnames <- grep(glob2rx("*.0"),parnames,val=T)
-    parnames <- parnames[!(parnames%in%ivpnames)]
     guess.params <- unlist(parameters[d,])
     theta.x <- matrix(
                       data=rnorm(
@@ -117,6 +113,10 @@ if (file.exists(imagefile)) {   # we are continuing where we left off?
                       nrow=length(guess.params),
                       dimnames=list(names(guess.params),NULL)
                       )
+    sigma <- sigma[sigma>0] # the random-walk SDs
+    parnames <- names(sigma)
+    ivpnames <- grep(glob2rx("*.0"),parnames,val=T)
+    parnames <- parnames[!(parnames%in%ivpnames)]
 
     for (r in seq(length=nreps)) {
       count <- count+1
