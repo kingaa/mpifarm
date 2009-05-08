@@ -8,6 +8,7 @@ nmifs <- 20                       # total number of MIFs per replicate
 unweighted <- 0                  # number of unweighted MIF iterations
 max.fail <- 100 # maximum number of filtering failures before an error is triggered
 gran <- 5                               # granularity (MIFs per chunk)
+checkpoint <- 10                        # checkpoint granularity
 
 nparticles <- 10000                     # pfilter's Np
 cooling <- 0.99                         # cooling factor
@@ -216,7 +217,7 @@ results <- mpi.farm(
                       solib=solib
                       ),
                     stop.condition=(all.done),
-                    checkpoint=ndsets,
+                    checkpoint=checkpoint,
                     checkpoint.file=checkpointfile,
                     info=TRUE
                     )
@@ -227,7 +228,7 @@ print(toc-tic)
 mpi.close.Rslaves()
 mpi.exit()
 
-noerr <- !sapply(results,function(x)inherits(x,'try-error'))
+noerr <- !sapply(results,inherits,"try-error")
 joblist <- results[noerr]
 err <- results[!noerr]
 if (length(err)>0) print(err)
