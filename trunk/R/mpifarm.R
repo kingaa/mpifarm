@@ -35,7 +35,10 @@ mpi.farm <- function (proc, joblist, common=list(),
   mpi.remote.exec(mpi.farm.slave,fn,common,ret=FALSE) # start up the slaves
   finished <- vector(mode='list',length=0)
   in.progress <- vector(mode='list',length=0)
-  names(joblist) <- seq(length=length(joblist))
+  if (is.null(names(joblist)))
+    names(joblist) <- seq(length=length(joblist))
+  else
+    names(joblist) <- make.unique(names(joblist))
   nslave <- mpi.comm.size()-1
   if (nslave > length(joblist)) {
     warning("mpi.farm warning: more slaves than jobs, killing unneeded slaves",call.=FALSE)
@@ -118,9 +121,7 @@ mpi.farm <- function (proc, joblist, common=list(),
       live <- live[live!=src]
     }
   }
-  finished <- finished[order(as.numeric(names(finished)))]
-  names(finished) <- NULL
-  finished
+  finished[order(as.numeric(names(finished)))]
 }
 
 mpi.farm.slave <- function (fn, common=list()) { # slave procedure for mpi.farm

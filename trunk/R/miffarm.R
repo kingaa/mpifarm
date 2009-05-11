@@ -207,7 +207,7 @@ mif.farm <- function (joblist,
   noerr <- !sapply(finished,inherits,"try-error")
   err <- finished[!noerr]
   finished <- finished[noerr]
-  if (length(err)>0) lapply(err,print)
+  if (length(err)>0) lapply(err,function(x)print(as.character(x)))
 
   save(list=c('finished','err'),file=checkpointfile)
 
