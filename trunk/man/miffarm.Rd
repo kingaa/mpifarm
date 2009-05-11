@@ -96,23 +96,62 @@ par.untrans(object, params)
 \seealso{}
 \examples{
   \dontrun{
-    mpi.spawn.Rslaves(needlog=F)
+jobname <- "test"
 
-    x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
-    y <- mpi.farm(a+b,x)
-    print(y)
+imagefile <- paste('image_',jobname,'.rda',sep='') # binary file for saving the workspace
+mpfile <- paste('modelparams_',jobname,'.csv',sep='') # input parameter file
+mlefile <- paste('mle_',jobname,'.csv',sep='') # MLEs are to be saved here
+modelRfile <- paste(modelStem,".R",sep='')
 
-    y <- mpi.farm({if(runif(1)<0.5)stop('yikes');a+b},x)
-    print(y)
+source(modelRfile)         # model-specific codes, loading data, etc.
 
-    y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+b},x,info=F)
-    print(y)
-    warnings()
+if (!exists("make.pomp"))
+   stop("file ",sQuote(modelRfile)," does not define ",sQuote("make.pomp")," as it should")
+if (!exists("solib"))
+   solib <- NULL
 
-    x <- lapply(1:100,function(k)list(a=k,b=0,done=0))
-    y <- mpi.farm({b <- b+rnorm(1); list(a=a,b=b,done=done+1)},x,stop.condition=((abs(b)>2)|(done>10)))
+## read the input parameter file
+parameters <- read.csv(file=mpfile)   
+## random-walks and initial displacements are to be multiplicative
+unfinished <- eval(
+                  parse(
+                        text=paste(
+                          "mif.farm.init(",
+                          "parameters=parameters,",
+                          "make.pomp=make.pomp,",
+                          paste(args,collapse=','),
+                          ")",
+                          sep=""
+                          )
+                        )
+                   )
 
-    mpi.close.Rslaves()
+mpi.spawn.Rslaves(needlog=TRUE)
+
+tic <- Sys.time()
+
+results <- eval(
+                parse(
+                      text=paste(
+                        "mif.farm(",
+                        "joblist=unfinished,",
+                        "solib=solib,",
+                        paste(args,collapse=","),
+                        ")",
+                        sep=""
+                        )
+                      )
+                )
+
+toc <- Sys.time()
+print(toc-tic)
+
+mpi.close.Rslaves()
+mpi.exit()
+
+write.csv(results$mle,file=mlefile,na='',row.names=F)
+with(results,save(finished,err,file=imagefile))
+
   }
 }
 \keyword{programming}
