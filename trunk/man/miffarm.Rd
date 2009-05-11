@@ -8,14 +8,14 @@
   Farm out iterated filtering jobs across a cluster.
 }
 \usage{
-mif.farm.init(nreps = 1, init.disp = 0, parameters, make.pomp)
+mif.farm.init(nreps = 1, init.disp = 0, parameters, make.pomp, \dots)
 mif.farm(joblist, jobname = NULL, solib = NULL,
          nmifs = 10, unweighted = 0, max.fail = 0,
          gran = 5, Np = 1000, cooling.factor = 0.99,
          ic.lag = 60, var.factor = 4, 
          filter.q = TRUE, nfilters = 10,
          scratchdir = getwd(),
-         checkpoint = mpi.universe.size())
+         checkpoint = mpi.universe.size(), \dots)
 par.trans(object, params)
 par.untrans(object, params)
 }
@@ -77,6 +77,9 @@ par.untrans(object, params)
     a named parameter vector.
     The parameters to be transformed or untransformed.
     If this is not specified, \code{coef(object)} will be used instead.
+  }
+  \item{\dots}{
+    other arguments, ignored.
   }
 }
 \details{
