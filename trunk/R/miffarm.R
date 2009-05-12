@@ -122,6 +122,8 @@ mif.farm <- function (joblist,
                                         ic.lag=ic.lag,
                                         var.factor=var.factor
                                         )
+                           } else {
+                             coef(mle) <- start
                            }
                          }
                          if (done < nmifs) { # continue MIFfing
@@ -182,6 +184,10 @@ mif.farm <- function (joblist,
                                         done=done,
                                         seed=seed,
                                         rngstate=.Random.seed,
+                                        start=start,
+                                        rw.sd=rw.sd,
+                                        ivpnames=ivpnames,
+                                        parnames=parnames,
                                         nfail=nfail,
                                         loglik=loglik,
                                         pred.mean=pred.mean,
