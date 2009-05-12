@@ -95,6 +95,13 @@ mif.farm <- function (joblist,
   if ((!is.list(joblist))||!(is.list(joblist[[1]]))||(is.null(names(joblist[[1]]))))
     stop(sQuote("joblist")," must be a list of named lists")
 
+  if (!all(c("mle","start","rw.sd","ivpnames","parnames","seed","model","dataset","done")%in%names(joblist[[1]])))
+    stop("each sublist in ",sQuote("joblist")," must contain at least the elements ",
+         sQuote("mle"),", ",sQuote("start"),", ",sQuote("rw.sd"),", ",sQuote("ivpnames"),", ",
+         sQuote("parnames"),", ",sQuote("seed"),", ",sQuote("model"),", ",sQuote("dataset"),
+         " and ",", ",sQuote("done"),
+         call.=FALSE)         
+
   id <- paste(basename(getwd()),jobname,sep='_') # an identifier for the files to be saved
   checkpointfile <- file.path(scratchdir,paste(id,".rda",sep="")) # binary file for checkpoints
 
