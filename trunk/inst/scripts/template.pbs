@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -N test
+#PBS -N template
 #PBS -m abe
 #PBS -M kingaa@umich.edu
 #PBS -lnodes=18:ppn=4
@@ -8,9 +8,10 @@
 RSCRIPT='/apps/R281/bin/Rscript --vanilla'
 MIFFIT=`$RSCRIPT -e 'cat(system.file(package="mpifarm","scripts/miffit.R"))'`
 SCRATCHDIR=/scratch/kingaa
-MODELSTEM=tps_eltor
+MODELSTEM=cholmodel
+OPTIONS="filter.q=TRUE cooling.factor=0.99 max.fail=100 init.disp=4 Np=1000 nreps=2 nmifs=160 gran=20"
 
 cd $PBS_O_WORKDIR
 lamboot -v $PBS_NODEFILE
-$RSCRIPT $MIFFIT filter.q=TRUE cooling.factor=0.99 max.fail=100 init.disp=5 nparticles=1000 nreps=3 nmifs=20 gran=2 jobname=\"$PBS_JOBNAME\" modelStem=\"$MODELSTEM\" scratchdir=\"$SCRATCHDIR\"
+$RSCRIPT $MIFFIT $OPTIONS jobname=\"$PBS_JOBNAME\" modelStem=\"$MODELSTEM\" scratchdir=\"$SCRATCHDIR\"
 lamhalt -v
