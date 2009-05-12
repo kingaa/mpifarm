@@ -1,11 +1,11 @@
 #!/bin/sh
-#$ -N mpitest
-#$ -cwd
-#$ -j y
-#$ -S /bin/bash
-#$ -v LD_LIBRARY_PATH=/apps/lam711/gnu/lib
+#PBS -N mpitest
+#PBS -l nodes=18:ppn=4
+#PBS -S /bin/bash
 
-export PATH=$SGE_O_PATH
+RSCRIPT='/apps/R281/bin/Rscript --vanilla'
 
-
-/apps/R271/gnu/bin/Rscript --vanilla mpitest.R
+cd $PBS_O_WORKDIR
+lamboot -v $PBS_NODEFILE
+$RSCRIPT mpitest.R
+lamhalt -v
