@@ -164,6 +164,7 @@ mif.farm <- function (joblist,
                                         seq(length=nfilters),
                                         function(n)pfilter(
                                                            mle,
+                                                           Np=Np,
                                                            max.fail=max.fail,
                                                            pred.mean=TRUE,
                                                            pred.var=TRUE,
