@@ -1,0 +1,118 @@
+
+R version 2.8.1 (2008-12-22)
+Copyright (C) 2008 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> require(Rmpi)
+Loading required package: Rmpi
+> mpi.spawn.Rslaves(needlog=T)
+	10 slaves are spawned successfully. 0 failed.
+master  (rank 0 , comm 1) of size 11 is running on: quercus 
+slave1  (rank 1 , comm 1) of size 11 is running on: quercus 
+slave2  (rank 2 , comm 1) of size 11 is running on: quercus 
+slave3  (rank 3 , comm 1) of size 11 is running on: quercus 
+slave4  (rank 4 , comm 1) of size 11 is running on: quercus 
+slave5  (rank 5 , comm 1) of size 11 is running on: quercus 
+slave6  (rank 6 , comm 1) of size 11 is running on: quercus 
+slave7  (rank 7 , comm 1) of size 11 is running on: quercus 
+slave8  (rank 8 , comm 1) of size 11 is running on: quercus 
+slave9  (rank 9 , comm 1) of size 11 is running on: quercus 
+slave10 (rank 10, comm 1) of size 11 is running on: quercus 
+> 
+> require(mpifarm)
+Loading required package: mpifarm
+Loading required package: pomp
+Loading required package: deSolve
+Loading required package: subplex
+> 
+> set.seed(1066)
+> seeds <- ceiling(runif(n=mpi.universe.size(),0,2^31))
+> x <- mpi.farm({set.seed(seed)},joblist=lapply(seeds,function(x)list(seed=x)),info=F)
+> 
+> x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
+> y <- mpi.farm(a+b,x,info=F)
+> 
+> y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+b},x,info=F)
+Warning messages:
+1: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+2: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+3: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+4: mpi.farm: slave 10 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+5: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+6: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+7: mpi.farm: slave 9 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+8: mpi.farm: slave 8 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+9: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+10: mpi.farm: slave 9 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+> warnings()
+Warning messages:
+1: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+
+2: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
+
+3: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+
+4: mpi.farm: slave 10 reports: Error in eval(expr, envir, enclos) : yikes
+
+5: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+
+6: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : yikes
+
+7: mpi.farm: slave 9 reports: Error in eval(expr, envir, enclos) : yikes
+
+8: mpi.farm: slave 8 reports: Error in eval(expr, envir, enclos) : yikes
+
+9: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+
+10: mpi.farm: slave 9 reports: Error in eval(expr, envir, enclos) : yikes
+
+> 
+> x <- lapply(1:100,function(k)list(a=k,b=0,done=0))
+> y <- mpi.farm({print(c(a,b,done));list(a=a,b=b+rnorm(1),done=done+1)},x,stop.condition=((abs(b)>2)|(done>10)),info=F)
+> 
+> x <- lapply(1:300,function(k)list(a=k,b=10*k))
+> y <- mpi.farm(a+mean(rnorm(n=b)),x,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> 
+> file.remove("mpitest.rda")
+[1] TRUE
+> 
+> x <- lapply(1:50,function(k)list(a=k,b=10*k,done=FALSE))
+> y <- mpi.farm(
++               {
++                list(a=a-1,b=b,m=mean(rnorm(n=b)),done=(a<=1))
++                },
++               x,
++               stop.condition=done,
++               checkpoint.file="mpitest.rda",
++               checkpoint=500,
++               info=FALSE
++               )
+> 
+> file.remove("mpitest.rda")
+[1] TRUE
+> 
+> mpi.close.Rslaves()
+[1] 1
+> mpi.quit()
