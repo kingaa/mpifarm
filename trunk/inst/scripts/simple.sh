@@ -1,15 +1,11 @@
 #!/bin/sh
-#$ -N simple
-#$ -cwd
-#$ -j y
-#$ -S /bin/bash
-#$ -q fast.q@@*
-#$ -v LD_LIBRARY_PATH=/apps/lam711/gnu/lib
+#PBS -N simple
+#PBS -l nodes=18:ppn=4
+#PBS -S /bin/bash
 
-export PATH=$SGE_O_PATH
+RSCRIPT='/apps/R281/bin/Rscript --vanilla'
 
-R_EXE='/apps/R271/gnu/bin/Rscript --vanilla'
-WORKDIR=$SGE_O_WORKDIR
-NCPU=$NSLOTS
-
-$R_EXE job.R nper=100 nrand=10000
+cd $PBS_O_WORKDIR
+lamboot -v $PBS_NODEFILE
+$RSCRIPT simple.R nper=100 nrand=10000
+lamhalt -v
