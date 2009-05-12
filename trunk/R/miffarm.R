@@ -104,23 +104,25 @@ mif.farm <- function (joblist,
                          ## name of a file in which to save individual-job checkpoints
                          ckptfile <- file.path(scratchdir,paste(dataset,'_',id,'_',done,'_',seed,'.rda',sep=''))
                          if (!is.null(solib)) dyn.load(solib) # load the SO library
-                         if (done == 0) {  # first MIF runs
+                         if (done==0) {  # first MIF runs
                            save.seed <- .Random.seed
                            set.seed(seed)
                            rngstate <- .Random.seed
                            .Random.seed <<- save.seed
-                           mle <- mif(
-                                      mle,
-                                      Nmif=0,
-                                      start=start,
-                                      ivps=ivpnames,
-                                      pars=parnames,
-                                      rw.sd=rw.sd,
-                                      Np=Np,
-                                      cooling.factor=cooling.factor,
-                                      ic.lag=ic.lag,
-                                      var.factor=var.factor
-                                      )
+                           if (nmifs>0) {
+                             mle <- mif(
+                                        mle,
+                                        Nmif=0,
+                                        start=start,
+                                        ivps=ivpnames,
+                                        pars=parnames,
+                                        rw.sd=rw.sd,
+                                        Np=Np,
+                                        cooling.factor=cooling.factor,
+                                        ic.lag=ic.lag,
+                                        var.factor=var.factor
+                                        )
+                           }
                          }
                          if (done < nmifs) { # continue MIFfing
                            save.seed <- .Random.seed
@@ -140,8 +142,11 @@ mif.farm <- function (joblist,
                            nfail <- conv.rec(mle,'nfail')
                            nfail <- nfail[length(nfail)-1]
                            loglik <- logLik(mle)
-                           rngstate <- .Random.seed
-                           .Random.seed <<- save.seed
+                           pred.mean <- NA
+                           pred.var <- NA
+                           filter.mean <- NA
+                           cond.loglik <- NA
+                           eff.sample.size <- NA
                            all.done <- FALSE
                          } else if (filter.q) { # final particle filtering
                            save.seed <- .Random.seed
@@ -150,17 +155,25 @@ mif.farm <- function (joblist,
                                         seq(length=nfilters),
                                         function(n)pfilter(
                                                            mle,
-                                                           max.fail=max.fail
+                                                           max.fail=max.fail,
+                                                           pred.mean=TRUE,
+                                                           pred.var=TRUE,
+                                                           filter.mean=TRUE
                                                            )
                                         )
                            nfail <- sapply(ff,function(x)x$nfail)
                            loglik <- sapply(ff,function(x)x$loglik)
-                           rngstate <- .Random.seed
-                           .Random.seed <<- save.seed
+                           pred.mean <- sapply(ff,function(x)x$pred.mean)
+                           pred.var <- sapply(ff,function(x)x$pred.var)
+                           filter.mean <- sapply(ff,function(x)x$filter.mean)
+                           cond.loglik <- sapply(ff,function(x)x$cond.loglik)
+                           eff.sample.size <- sapply(ff,function(x)x$eff.sample.size)
                            all.done <- TRUE
                          } else {          # nothing to do
                            all.done <- TRUE
                          }
+                         rngstate <- .Random.seed
+                         .Random.seed <<- save.seed
                          if (!is.null(solib)) dyn.unload(solib) # unload the SO library
                          result <- list(
                                         mle=mle,
@@ -171,6 +184,11 @@ mif.farm <- function (joblist,
                                         rngstate=.Random.seed,
                                         nfail=nfail,
                                         loglik=loglik,
+                                        pred.mean=pred.mean,
+                                        pred.var=pred.var,
+                                        filter.mean=filter.mean,
+                                        cond.loglik=cond.loglik,
+                                        eff.sample.size=eff.sample.size,
                                         all.done=all.done
                                         )
                          save('result',file=ckptfile)
