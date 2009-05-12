@@ -1,8 +1,8 @@
 ## for running multiple MIFs using Rmpi and mpifarm
 
-mif.farm.init <- function (nreps = 1, init.disp = 0,
-                           parameters,
-                           make.pomp, ...) {
+mif.farm.joblist <- function (nreps = 1, init.disp = 0,
+                              parameters,
+                              make.pomp, ...) {
 
   if (missing(make.pomp))
     stop("the function ",sQuote("make.pomp")," must be supplied")
@@ -37,7 +37,7 @@ mif.farm.init <- function (nreps = 1, init.disp = 0,
   joblist <- vector(mode='list',length=njobs)
   count <- 0
   for (d in seq(length=ndsets)) {
-    po <- make.pomp(dataset=datasets[d],model=models[d])               
+    po <- make.pomp(dataset=datasets[d],model=models[d],...)               
     guess.params <- unlist(parameters[d,])
     theta.x <- matrix(
                       data=par.trans(po,guess.params),
@@ -94,12 +94,6 @@ mif.farm <- function (joblist,
 
   if ((!is.list(joblist))||!(is.list(joblist[[1]]))||(is.null(names(joblist[[1]]))))
     stop(sQuote("joblist")," must be a list of named lists")
-#   if (!all(c("mle","start","rw.sd","ivpnames","parnames","seed","model","dataset","done")%in%names(joblist[[1]])))
-#     stop("each sublist in ",sQuote("joblist")," must contain the elements ",
-#          sQuote("mle"),", ",sQuote("start"),", ",sQuote("rw.sd"),", ",sQuote("ivpnames"),", ",
-#          sQuote("parnames"),", ",sQuote("seed"),", ",sQuote("model"),", ",sQuote("dataset"),
-#          " and ",", ",sQuote("done"),
-#          call.=FALSE)         
 
   id <- paste(basename(getwd()),jobname,sep='_') # an identifier for the files to be saved
   checkpointfile <- file.path(scratchdir,paste(id,".rda",sep="")) # binary file for checkpoints
@@ -196,7 +190,8 @@ mif.farm <- function (joblist,
                          Np=Np,
                          cooling.factor=cooling.factor,
                          ic.lag=ic.lag,
-                         var.factor=var.factor
+                         var.factor=var.factor,
+                         ...
                          ),
                        stop.condition=(all.done),
                        checkpoint=checkpoint,

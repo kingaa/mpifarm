@@ -40,7 +40,7 @@ if (file.exists(imagefile)) {   # we are continuing where we left off?
   unfinished <- eval(
                      parse(
                            text=paste(
-                             "mif.farm.init(",
+                             "mif.farm.joblist(",
                              "parameters=parameters,",
                              "make.pomp=make.pomp,",
                              paste(args,collapse=','),

@@ -11,20 +11,24 @@ mpi.farm <- function (proc, joblist, common=list(),
       stop(sQuote("checkpoint.file")," must be a filename",call.=FALSE)
     if (file.exists(checkpoint.file))
       stop("file ",sQuote(checkpoint.file)," exists",call.=FALSE)
-    if ((is.null(checkpoint))||(checkpoint<=0))
+    if ((is.null(checkpoint))||(checkpoint<0))
       stop("for checkpointing to work, ",sQuote("checkpoint")," must be set to a positive integer",call.=FALSE)
     checkpoint <- as.integer(checkpoint)
-    file.ok <- file.create(checkpoint.file)
-    if (!file.ok) {
-      stop(
-           "cannot create checkpoint file ",
-           sQuote(checkpoint.file),
-           call.=FALSE
-           )
+    if (checkpoint>0) {
+      file.ok <- file.create(checkpoint.file)
+      if (!file.ok) {
+        stop(
+             "cannot create checkpoint file ",
+             sQuote(checkpoint.file),
+             call.=FALSE
+             )
+      } else {
+        file.remove(checkpoint.file)
+      }
+      checkpointing <- TRUE
     } else {
-      file.remove(checkpoint.file)
+      checkpointing <- FALSE
     }
-    checkpointing <- TRUE
   }
   if (mpi.comm.size() < 2)
     stop("mpi.farm: no slaves running")

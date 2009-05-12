@@ -1,8 +1,8 @@
 Package: mpifarm
 Type: Package
 Title: Farm out a sequence of jobs to a cluster of slaves using MPI.
-Version: 1.8-2
-Date: 2009-05-11
+Version: 1.8-3
+Date: 2009-05-12
 Author: Aaron A. King <kingaa@umich.edu>
 Maintainer: Aaron A. King <kingaa@umich.edu>
 Description: Parallel job-farming.

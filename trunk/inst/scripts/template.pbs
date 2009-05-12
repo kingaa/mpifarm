@@ -1,12 +1,12 @@
 #!/bin/sh
 #PBS -N template
 #PBS -m abe
-#PBS -M kingaa@umich.edu
+#PBS -M dontspamme@yoyodyne.com
 #PBS -lnodes=18:ppn=4
 #PBS -S /bin/bash
 
 RSCRIPT='/apps/R281/bin/Rscript --vanilla'
-MIFFIT=`$RSCRIPT -e 'cat(system.file(package="mpifarm","scripts/miffit.R"))'`
+MIFFIT=`$RSCRIPT -e 'cat(system.file("scripts/miffit.R",package="mpifarm"))'`
 SCRATCHDIR=/scratch/kingaa
 MODELSTEM=cholmodel
 OPTIONS="filter.q=TRUE cooling.factor=0.99 max.fail=100 init.disp=4 Np=1000 nreps=2 nmifs=160 gran=20"

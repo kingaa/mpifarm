@@ -1,6 +1,6 @@
 \name{mif.farm}
 \alias{mif.farm}
-\alias{mif.farm.init}
+\alias{mif.farm.joblist}
 \alias{par.trans}
 \alias{par.untrans}
 \title{Manage a MIF farm}
@@ -8,7 +8,6 @@
   Farm out iterated filtering jobs across a cluster.
 }
 \usage{
-mif.farm.init(nreps = 1, init.disp = 0, parameters, make.pomp, \dots)
 mif.farm(joblist, jobname = NULL, solib = NULL,
          nmifs = 10, unweighted = 0, max.fail = 0,
          gran = 5, Np = 1000, cooling.factor = 0.99,
@@ -16,23 +15,11 @@ mif.farm(joblist, jobname = NULL, solib = NULL,
          filter.q = TRUE, nfilters = 10,
          scratchdir = getwd(),
          checkpoint = mpi.universe.size(), \dots)
+mif.farm.joblist(nreps = 1, init.disp = 0, parameters, make.pomp, \dots)
 par.trans(object, params)
 par.untrans(object, params)
 }
 \arguments{
-  \item{nreps}{
-    Number of replicates per parameter set
-  }
-  \item{init.disp}{
-    optional number; initial-displacement multiplier
-  }
-  \item{parameters}{
-    data frame; defines starting-point parameters, datasets, and models.
-    Also sets the random-walk SDs.
-  }
-  \item{make.pomp}{
-    function; creates the \code{pomp} objects.
-  }
   \item{joblist}{
     A list of named lists.
     Each element represents a mif run.
@@ -78,14 +65,27 @@ par.untrans(object, params)
     The parameters to be transformed or untransformed.
     If this is not specified, \code{coef(object)} will be used instead.
   }
+  \item{nreps}{
+    Number of replicates per parameter set
+  }
+  \item{init.disp}{
+    optional number; initial-displacement multiplier
+  }
+  \item{parameters}{
+    data frame; defines starting-point parameters, datasets, and models.
+    Also sets the random-walk SDs.
+  }
+  \item{make.pomp}{
+    function; creates the \code{pomp} objects.
+  }
   \item{\dots}{
-    other arguments, ignored.
+    When \code{mif.farm.joblist} is called, additional arguments are passed to \code{make.pomp}.
+    In the case of \code{mif.farm}, additional arguments are included in \code{mpi.farm}'s \code{common} list and are thus made available to all of the jobs in \code{joblist}.
   }
 }
-\details{
-}
+\details{}
 \value{
-  \code{mif.farm.init} returns a list of jobs suitable for entry as the \code{joblist} argument of \code{mif.farm}.
+  \code{mif.farm.joblist} returns a list of jobs suitable for entry as the \code{joblist} argument of \code{mif.farm}.
   \code{mif.farm} returns a list containing three elements:
   (i) \code{finished}, a list containing the completed jobs,
   (ii) \code{err}, a list of error messages generated on the slaves,
@@ -95,64 +95,8 @@ par.untrans(object, params)
 \note{}
 \seealso{}
 \examples{
-  \dontrun{
-jobname <- "test"
-
-imagefile <- paste('image_',jobname,'.rda',sep='') # binary file for saving the workspace
-mpfile <- paste('modelparams_',jobname,'.csv',sep='') # input parameter file
-mlefile <- paste('mle_',jobname,'.csv',sep='') # MLEs are to be saved here
-modelRfile <- paste(modelStem,".R",sep='')
-
-source(modelRfile)         # model-specific codes, loading data, etc.
-
-if (!exists("make.pomp"))
-   stop("file ",sQuote(modelRfile)," does not define ",sQuote("make.pomp")," as it should")
-if (!exists("solib"))
-   solib <- NULL
-
-## read the input parameter file
-parameters <- read.csv(file=mpfile)   
-## random-walks and initial displacements are to be multiplicative
-unfinished <- eval(
-                  parse(
-                        text=paste(
-                          "mif.farm.init(",
-                          "parameters=parameters,",
-                          "make.pomp=make.pomp,",
-                          paste(args,collapse=','),
-                          ")",
-                          sep=""
-                          )
-                        )
-                   )
-
-mpi.spawn.Rslaves(needlog=TRUE)
-
-tic <- Sys.time()
-
-results <- eval(
-                parse(
-                      text=paste(
-                        "mif.farm(",
-                        "joblist=unfinished,",
-                        "solib=solib,",
-                        paste(args,collapse=","),
-                        ")",
-                        sep=""
-                        )
-                      )
-                )
-
-toc <- Sys.time()
-print(toc-tic)
-
-mpi.close.Rslaves()
-mpi.exit()
-
-write.csv(results$mle,file=mlefile,na='',row.names=F)
-with(results,save(finished,err,file=imagefile))
-
-  }
+## See the example script in system.file("scripts/miffit.R",package="mpifarm")
+## and the example PBS script in system.file("scripts/template.pbs",package="mpifarm")
 }
 \keyword{programming}
 \keyword{utilities}
