@@ -173,11 +173,11 @@ mif.farm <- function (joblist,
                                         )
                            nfail <- sapply(ff,function(x)x$nfail)
                            loglik <- sapply(ff,function(x)x$loglik)
-                           pred.mean <- sapply(ff,function(x)x$pred.mean)
-                           pred.var <- sapply(ff,function(x)x$pred.var)
-                           filter.mean <- sapply(ff,function(x)x$filter.mean)
-                           cond.loglik <- sapply(ff,function(x)x$cond.loglik)
-                           eff.sample.size <- sapply(ff,function(x)x$eff.sample.size)
+                           pred.mean <- lapply(ff,function(x)x$pred.mean)
+                           pred.var <- lapply(ff,function(x)x$pred.var)
+                           filter.mean <- lapply(ff,function(x)x$filter.mean)
+                           cond.loglik <- lapply(ff,function(x)x$cond.loglik)
+                           eff.sample.size <- lapply(ff,function(x)x$eff.sample.size)
                            all.done <- TRUE
                          } else {          # nothing to do
                            all.done <- TRUE
