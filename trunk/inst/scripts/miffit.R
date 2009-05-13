@@ -49,8 +49,6 @@ if (file.exists(imagefile)) {   # we are continuing where we left off?
                              )
                            )
                      )
-
-  save(unfinished,file=imagefile)
 }
 
 mpi.spawn.Rslaves(needlog=F)
