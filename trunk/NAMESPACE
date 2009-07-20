@@ -4,6 +4,7 @@ export(
        farm,
        mif.farm,
        mif.farm.joblist,
+       multistart.optim.farm,
        par.trans,
        par.untrans
        )
