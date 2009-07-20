@@ -18,9 +18,14 @@ multistart.optim.farm <- function (fn, params, est,
   if (!all(est%in%colnames(params)))
     stop("all the entries of ",sQuote("est")," must be names of columns in ",sQuote("params"))
   fixed <- colnames(params)[!(colnames(params)%in%est)]
-  
+
   userdata <- list(...)
   
+  fn.names <- setdiff(names(formals(fn)),"...")
+  ind <- which(!(fn.names%in%c(colnames(params),names(userdata))))
+  if (length(ind)>0)
+    stop(sQuote("fn")," argument(s) ",paste(sapply(fn.names[ind],sQuote),collapse=",")," not supplied")
+
   n <- as.integer(n)
   gran <- as.integer(gran)
   n1 <- nrow(params)
@@ -62,7 +67,7 @@ multistart.optim.farm <- function (fn, params, est,
                     for (k in 1:nrow(params)) {
                       val <- try(
                                  obj.wrapper.fn(
-                                                x=unlist(params[k,]),
+                                                x=unlist(params[k,,drop=FALSE]),
                                                 obj.fn=obj.fn,
                                                 userdata=userdata
                                                 ),
@@ -96,7 +101,7 @@ multistart.optim.farm <- function (fn, params, est,
   erridx <- sapply(res,inherits,"try-error")
   nerr <- sum(erridx)
   if (nerr>0) {
-    cat("at level 1: ",nerr," errors\n",sep="")
+    cat("at level 1: ",nerr," errors out of ",n1,"\n",sep="")
   }
   if (nerr>=n1)
     stop("all parameters resulted in error at level 1")
@@ -107,7 +112,7 @@ multistart.optim.farm <- function (fn, params, est,
   for (i in seq(length=length(res))) {
     for (j in seq(length=length(res[[i]]$val))) {
       vals[k] <- res[[i]]$vals[j]
-      params[k,] <- unlist(res[[i]]$params[j,])
+      params[k,] <- unlist(res[[i]]$params[j,,drop=FALSE])
       k <- k+1
     }
   }
@@ -119,7 +124,7 @@ multistart.optim.farm <- function (fn, params, est,
                     as.list(
                             tapply(
                                    seq(length=nrow(params)),
-                                   lapply(fixed,function(n)params[,n]),
+                                   lapply(fixed,function(i)params[,i]),
                                    function (k) {
                                      k[head(order(vals[k]),n[lev])]
                                    }
@@ -152,8 +157,6 @@ multistart.optim.farm <- function (fn, params, est,
                       for (k in 1:nrow(params)) {
                         x <- unlist(params[k,est])
                         fixed.pars <- unlist(params[k,fixed])
-                        print(x)
-                        print(fixed.pars)
                         fit <- try(
                                    optim(
                                          par=x,
@@ -195,13 +198,21 @@ multistart.optim.farm <- function (fn, params, est,
                     info=info
                     )
 
+    erridx <- sapply(res,inherits,"try-error")
+    nerr <- sum(erridx)
+    if (nerr>0) {
+      cat("at level ",lev,": ",nerr," errors out of ",n1,"\n",sep="")
+    }
+    if (nerr>=n1)
+      stop("all parameters resulted in error at level 1")
+  
     params <- matrix(NA,nrow=n1-nerr,ncol=ncol(params),dimnames=list(NULL,colnames(params)))
     vals <- numeric(n1-nerr)
     k <- 1
     for (i in seq(length=length(res))) {
       for (j in seq(length=length(res[[i]]$val))) {
         vals[k] <- res[[i]]$vals[j]
-        params[k,] <- unlist(res[[i]]$params[j,])
+        params[k,] <- unlist(res[[i]]$params[j,,drop=FALSE])
         k <- k+1
       }
     }

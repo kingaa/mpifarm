@@ -1,7 +1,7 @@
 require(Rmpi)
 mpi.spawn.Rslaves(needlog=T)
 require(mpifarm)
-nslave <- mpi.comm.size()-1
+nslave <- mpi.universe.size()
 nper <- 50
 nrand <- 1000
 args <- commandArgs(TRUE)
