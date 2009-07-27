@@ -9,7 +9,9 @@ multistart.optim.farm(fn, params, est, n = integer(0),
                       gran = 20, jobname = NULL,
                       scratchdir = getwd(),
                       checkpoint = mpi.universe.size(),
-                      info = TRUE, control = list(), \dots)
+                      info = TRUE,
+                      method = c("Nelder-Mead", "subplex", "BFGS", "L-BFGS-B"),
+                      control = list(), \dots)
 }  
 \arguments{
   \item{fn}{
@@ -43,8 +45,13 @@ multistart.optim.farm(fn, params, est, n = integer(0),
   \item{info}{
     should progress information be displayed?
   }
+  \item{method}{
+    The optimization algorithm to be used.
+    See \code{\link[subplex]{subplex}} and \code{\link{optim}} for information on the available options.
+  } 
   \item{control}{
-    list of control parameters to be passed to \code{\link{optim}}.
+    optional; list of control parameters to be passed to \code{\link{optim}} or \code{\link[subplex]{subplex}}.
+    See the documentation for these functions for details and defaults.
   }
   \item{\dots}{
     additional arguments are passed to \code{fn}.

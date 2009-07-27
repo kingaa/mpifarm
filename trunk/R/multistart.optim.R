@@ -6,6 +6,7 @@ multistart.optim.farm <- function (fn, params, est,
                                    scratchdir = getwd(),
                                    checkpoint = mpi.universe.size(),
                                    info = TRUE,
+                                   method = c("Nelder-Mead","subplex","BFGS","L-BFGS-B"),
                                    control = list(),
                                    ...) {
   
@@ -29,6 +30,8 @@ multistart.optim.farm <- function (fn, params, est,
   n <- as.integer(n)
   gran <- as.integer(gran)
   n1 <- nrow(params)
+
+  method <- match.arg(method)
 
   if (length(gran)==1)
     gran <- c(gran,rep(1,length(n)))
@@ -157,18 +160,34 @@ multistart.optim.farm <- function (fn, params, est,
                       for (k in 1:nrow(params)) {
                         x <- unlist(params[k,est])
                         fixed.pars <- unlist(params[k,fixed])
-                        fit <- try(
-                                   optim(
-                                         par=x,
-                                         fn=obj.wrapper.fn,
-                                         obj.fn=obj.fn,
-                                         fixed=fixed.pars,
-                                         userdata=userdata,
-                                         hessian=FALSE,
-                                         control=control
-                                         ),
-                                   silent=FALSE
-                                   )
+                        if (method=="subplex") {
+                          require(subplex)
+                          fit <- try(
+                                     subplex(
+                                             par=x,
+                                             fn=obj.wrapper.fn,
+                                             obj.fn=obj.fn,
+                                             fixed=fixed.pars,
+                                             userdata=userdata,
+                                             hessian=FALSE,
+                                             control=control
+                                             ),
+                                     silent=FALSE
+                                     )
+                        } else {
+                          fit <- try(
+                                     optim(
+                                           par=x,
+                                           fn=obj.wrapper.fn,
+                                           obj.fn=obj.fn,
+                                           fixed=fixed.pars,
+                                           userdata=userdata,
+                                           hessian=FALSE,
+                                           control=control
+                                           ),
+                                     silent=FALSE
+                                     )
+                        }
                         if (inherits(fit,"try-error")) {
                           vals[k] <- NA
                           errs[k] <- nerr
@@ -193,6 +212,7 @@ multistart.optim.farm <- function (fn, params, est,
                       fixed=fixed,
                       userdata=userdata,
                       est=est,
+                      method=method,
                       control=control
                       ),
                     info=info
