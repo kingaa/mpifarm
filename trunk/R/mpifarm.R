@@ -73,6 +73,7 @@ mpi.farm <- function (proc, joblist, common=list(),
       joblist[[1]] <- NULL
     }
   }
+  slaves.at.leisure <- list()
   while (rcvd < sent) {
     res <- mpi.recv.Robj(source=mpi.any.source(),tag=mpi.any.tag()) # wait for someone to finish
     srctag <- mpi.get.sourcetag()
@@ -116,10 +117,12 @@ mpi.farm <- function (proc, joblist, common=list(),
       save(unfinished,finished,file=checkpoint.file)
     }
     if (length(joblist)>0) {       # is there more to do?
-      sent <- sent+1
-      mpi.send.Robj(joblist[1],dest=src,tag=3) # pop the next job off the stack and send it out
+      slaves.at.leisure <- c(slaves.at.leisure,src)
+      mpi.send.Robj(joblist[1],dest=slaves.at.leisure[[1]],tag=3) # pop the next job off the stack and send it out
       in.progress <- append(in.progress,joblist[1])
       joblist[[1]] <- NULL
+      slaves.at.leisure[[1]] <- NULL
+      sent <- sent+1
     } else {                            # if not, kill the slave
       mpi.send.Robj(0,dest=src,tag=666)
       live <- live[live!=src]
