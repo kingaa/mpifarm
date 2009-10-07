@@ -107,6 +107,8 @@ mpi.farm <- function (proc, joblist, common=list(),
         message('slave ',format(src),' reports: ',res$result)
       else
         warning('mpi.farm: slave ',format(src),' reports: ',res$result,call.=FALSE)
+      identifier <- res$id
+      in.progress[[identifier]] <- NULL
       piece <- list(res$result)
       names(piece) <- identifier
       finished <- append(finished,piece)
