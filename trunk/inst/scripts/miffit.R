@@ -13,6 +13,7 @@ if (is.null(jobname))
 
 ## the following cannot be changed by commandline arguments
 imagefile <- paste('image_',jobname,'.rda',sep='') # binary file for saving the workspace
+diagfile <- paste('diag_',jobname,'.rda',sep='') # binary file for saving diagnostics
 mpfile <- paste('modelparams_',jobname,'.csv',sep='') # input parameter file
 mlefile <- paste('mle_',jobname,'.csv',sep='') # MLEs are to be saved here
 modelRfile <- paste(modelStem,".R",sep='')
@@ -76,5 +77,19 @@ mpi.exit()
 
 write.csv(results$mle,file=mlefile,na='',row.names=F)
 with(results,save(finished,err,file=imagefile))
+
+conv.recs <- lapply(
+                    finished,
+                    function (x) {
+                      t(par.untrans(x$mle,t(conv.rec(x$mle))))
+                    }
+                    )
+filter.mean <- lapply(finished,function(x)x$filter.mean)
+## pred.mean <- lapply(finished,function(x)x$pred.mean)
+## pred.var <- lapply(finished,function(x)x$pred.var)
+eff.sample.size <- lapply(finished,function(x)x$eff.sample.size)
+## cond.loglik <- lapply(finished,function(x)x$cond.loglik)
+## save(conv.recs,filter.mean,pred.mean,pred.var,eff.sample.size,cond.loglik,file=diagfile)
+save(conv.recs,filter.mean,eff.sample.size,file=diagfile)
 
 q(save='no',status=0)
