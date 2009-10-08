@@ -45,13 +45,10 @@ mpi.farm <- function (proc, joblist, common=list(),
     names(joblist) <- make.unique(names(joblist))
   nslave <- mpi.comm.size()-1
   if (nslave > length(joblist)) {
-    warning("mpi.farm warning: more slaves than jobs, killing unneeded slaves",call.=FALSE)  
-    for (d in seq(from=length(joblist)+1,to=nslave,by=1)) {                                  
-      mpi.send.Robj(0,dest=d,tag=666)   # kill unneeded slaves                               
-    }                                                                                        
-    nslave <- length(joblist)                                                                
+    warning("mpi.farm warning: more slaves than jobs",call.=FALSE)  
   }
   slaves.at.leisure <- as.list(1:nslave)
+  last.etimes <- numeric(nslave)
   live <- seq(from=1,to=nslave,by=1)    # numbers of live slaves
   on.exit(
           for (d in live) {
@@ -72,6 +69,7 @@ mpi.farm <- function (proc, joblist, common=list(),
       in.progress <- append(in.progress,joblist[1])
       joblist[[1]] <- NULL
       slaves.at.leisure[[1]] <- NULL
+      last.etimes <- tail(last.etimes,-1)
       sent <- sent+1
     }
   }
@@ -82,6 +80,10 @@ mpi.farm <- function (proc, joblist, common=list(),
     tag <- srctag[2]                    # were they succesful?
     rcvd <- rcvd+1
     slaves.at.leisure <- c(slaves.at.leisure,src)
+    last.etimes <- c(last.etimes,as.numeric(res$etime,units="secs"))
+    srt <- order(last.etimes)
+    slaves.at.leisure <- slaves.at.leisure[srt]
+    last.etimes <- last.etimes[srt]
     if (tag == 33) {                    # success
       slaveinfo[1,src] <- slaveinfo[1,src]+1
       slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1]+1
@@ -129,6 +131,7 @@ mpi.farm <- function (proc, joblist, common=list(),
       in.progress <- append(in.progress,joblist[1])
       joblist[[1]] <- NULL
       slaves.at.leisure[[1]] <- NULL
+      last.etimes <- tail(last.etimes,-1)
       sent <- sent+1
     }
   }
