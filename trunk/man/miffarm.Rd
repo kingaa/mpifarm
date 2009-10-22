@@ -14,7 +14,8 @@ mif.farm(joblist, jobname = NULL, solib = NULL,
          ic.lag = 60, var.factor = 4, 
          filter.q = TRUE, nfilters = 10,
          scratchdir = getwd(),
-         checkpoint = mpi.universe.size(), \dots)
+         checkpoint = mpi.universe.size(), 
+         local.checkpointing = TRUE, \dots)
 mif.farm.joblist(nreps = 1, init.disp = 0, parameters, make.pomp, \dots)
 par.trans(object, params)
 par.untrans(object, params)
@@ -54,6 +55,9 @@ par.untrans(object, params)
   \item{checkpoint}{
     optional integer specifying the granularity of checkpointing.
     That is, the checkpoint file will be saved once every \code{checkpoint} jobs from joblist are completed.
+  }
+  \item{local.checkpointing}{
+    logical; if TRUE, then a checkpoint file for each individual chunk will be written to the scratch directory.
   }
   \item{object}{
     a \code{pomp} object.

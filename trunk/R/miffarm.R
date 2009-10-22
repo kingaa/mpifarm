@@ -84,6 +84,7 @@ mif.farm <- function (joblist,
                       nfilters = 10,
                       scratchdir = getwd(),
                       checkpoint = mpi.universe.size(),
+                      local.checkpointing = TRUE,
                       ...) {
   
   if (is.null(jobname))
@@ -109,7 +110,8 @@ mif.farm <- function (joblist,
                        { # this is the expression to be evaluated on each slave
                          require(pomp)
                          ## name of a file in which to save individual-job checkpoints
-                         ckptfile <- file.path(scratchdir,paste(dataset,'_',id,'_',done,'_',seed,'.rda',sep=''))
+                         if (local.checkpointing)
+                           ckptfile <- file.path(scratchdir,paste(dataset,'_',id,'_',done,'_',seed,'.rda',sep=''))
                          if (!is.null(solib)) dyn.load(solib) # load the SO library
                          if (done==0) {  # first MIF runs
                            save.seed <- .Random.seed
@@ -205,7 +207,8 @@ mif.farm <- function (joblist,
                                         eff.sample.size=eff.sample.size,
                                         all.done=all.done
                                         )
-                         save('result',file=ckptfile)
+                         if (local.checkpointing)
+                           save('result',file=ckptfile)
                          result
                        },
                        joblist=joblist,
@@ -223,6 +226,7 @@ mif.farm <- function (joblist,
                          cooling.factor=cooling.factor,
                          ic.lag=ic.lag,
                          var.factor=var.factor,
+                         local.checkpointing=local.checkpointing,
                          ...
                          ),
                        stop.condition=(all.done),

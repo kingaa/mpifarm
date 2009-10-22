@@ -81,9 +81,9 @@ mpi.farm <- function (proc, joblist, common=list(),
     rcvd <- rcvd+1
     slaves.at.leisure <- c(slaves.at.leisure,src)
     last.etimes <- c(last.etimes,as.numeric(res$etime,units="secs"))
-    srt <- order(last.etimes)
-    slaves.at.leisure <- slaves.at.leisure[srt]
-    last.etimes <- last.etimes[srt]
+##     srt <- order(last.etimes)
+##     slaves.at.leisure <- slaves.at.leisure[srt]
+##     last.etimes <- last.etimes[srt]
     if (tag == 33) {                    # success
       slaveinfo[1,src] <- slaveinfo[1,src]+1
       slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1]+1
