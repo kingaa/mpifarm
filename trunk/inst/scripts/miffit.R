@@ -84,11 +84,11 @@ conv.recs <- lapply(
                       t(par.untrans(x$mle,t(conv.rec(x$mle))))
                     }
                     )
-filter.mean <- lapply(finished,function(x)x$filter.mean)
-## pred.mean <- lapply(finished,function(x)x$pred.mean)
-## pred.var <- lapply(finished,function(x)x$pred.var)
-eff.sample.size <- lapply(finished,function(x)x$eff.sample.size)
-## cond.loglik <- lapply(finished,function(x)x$cond.loglik)
+filter.mean <- lapply(results$finished,function(x)x$filter.mean)
+## pred.mean <- lapply(results$finished,function(x)x$pred.mean)
+## pred.var <- lapply(results$finished,function(x)x$pred.var)
+eff.sample.size <- lapply(results$finished,function(x)x$eff.sample.size)
+## cond.loglik <- lapply(results$finished,function(x)x$cond.loglik)
 ## save(conv.recs,filter.mean,pred.mean,pred.var,eff.sample.size,cond.loglik,file=diagfile)
 save(conv.recs,filter.mean,eff.sample.size,file=diagfile)
 
