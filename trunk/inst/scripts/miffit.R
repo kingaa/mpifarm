@@ -79,7 +79,7 @@ write.csv(results$mle,file=mlefile,na='',row.names=F)
 with(results,save(finished,err,file=imagefile))
 
 conv.recs <- lapply(
-                    finished,
+                    results$finished,
                     function (x) {
                       t(par.untrans(x$mle,t(conv.rec(x$mle))))
                     }
