@@ -63,6 +63,7 @@ mpi.farm <- function (proc, joblist, common=list(),
                       )
   sent <- 0
   rcvd <- 0
+  nerr <- 0
   for (d in seq(length=nslave)) {                     # initialize the queue
     if (length(joblist)>0) {            # farm out the work
       mpi.send.Robj(joblist[1],dest=slaves.at.leisure[[1]],tag=3) # pop the next job off the stack and send it out
@@ -114,14 +115,16 @@ mpi.farm <- function (proc, joblist, common=list(),
       piece <- list(res$result)
       names(piece) <- identifier
       finished <- append(finished,piece)
+      nerr <- nerr+1
     }
     if ((checkpointing)&&((rcvd%%checkpoint)==0)) {
       unfinished <- append(joblist,in.progress)
       if (info) cat(
                     "writing checkpoint file",
                     sQuote(checkpoint.file),
-                    "\n#finished =",length(finished),
+                    "\n#finished =",length(finished)-nerr,
                     "#unfinished =",length(unfinished),
+                    "#error =",nerr,
                     "\n"
                     )
       save(unfinished,finished,file=checkpoint.file)
