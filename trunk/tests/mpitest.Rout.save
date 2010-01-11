@@ -1,6 +1,6 @@
 
-R version 2.8.1 (2008-12-22)
-Copyright (C) 2008 The R Foundation for Statistical Computing
+R version 2.10.1 (2009-12-14)
+Copyright (C) 2009 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -18,24 +18,23 @@ Type 'q()' to quit R.
 > require(Rmpi)
 Loading required package: Rmpi
 > mpi.spawn.Rslaves(needlog=T)
-	10 slaves are spawned successfully. 0 failed.
-master  (rank 0 , comm 1) of size 11 is running on: quercus 
-slave1  (rank 1 , comm 1) of size 11 is running on: quercus 
-slave2  (rank 2 , comm 1) of size 11 is running on: quercus 
-slave3  (rank 3 , comm 1) of size 11 is running on: quercus 
-slave4  (rank 4 , comm 1) of size 11 is running on: quercus 
-slave5  (rank 5 , comm 1) of size 11 is running on: quercus 
-slave6  (rank 6 , comm 1) of size 11 is running on: quercus 
-slave7  (rank 7 , comm 1) of size 11 is running on: quercus 
-slave8  (rank 8 , comm 1) of size 11 is running on: quercus 
-slave9  (rank 9 , comm 1) of size 11 is running on: quercus 
-slave10 (rank 10, comm 1) of size 11 is running on: quercus 
+	8 slaves are spawned successfully. 0 failed.
+master (rank 0, comm 1) of size 9 is running on: compute-1-2 
+slave1 (rank 1, comm 1) of size 9 is running on: compute-1-2 
+slave2 (rank 2, comm 1) of size 9 is running on: compute-1-2 
+slave3 (rank 3, comm 1) of size 9 is running on: compute-1-2 
+slave4 (rank 4, comm 1) of size 9 is running on: compute-1-2 
+slave5 (rank 5, comm 1) of size 9 is running on: compute-1-1 
+slave6 (rank 6, comm 1) of size 9 is running on: compute-1-1 
+slave7 (rank 7, comm 1) of size 9 is running on: compute-1-1 
+slave8 (rank 8, comm 1) of size 9 is running on: compute-1-1 
 > 
 > require(mpifarm)
 Loading required package: mpifarm
 Loading required package: pomp
 Loading required package: deSolve
 Loading required package: subplex
+Loading required package: mvtnorm
 > 
 > set.seed(1066)
 > seeds <- ceiling(runif(n=mpi.universe.size(),0,2^31))
@@ -44,49 +43,114 @@ Loading required package: subplex
 > x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
 > y <- mpi.farm(a+b,x,info=F)
 > 
+> x <- lapply(1:100,function(k)list(a=k))
+> y <- mpi.farm({for (j in 1:10000) j <- j+1; a},x,info=F)
+> sum(diff(as.numeric(y))!=1)
+[1] 0
+> 
 > y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+b},x,info=F)
-Warning messages:
-1: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
- 
-2: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
- 
-3: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
- 
-4: mpi.farm: slave 10 reports: Error in eval(expr, envir, enclos) : yikes
- 
-5: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
- 
-6: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : yikes
- 
-7: mpi.farm: slave 9 reports: Error in eval(expr, envir, enclos) : yikes
- 
-8: mpi.farm: slave 8 reports: Error in eval(expr, envir, enclos) : yikes
- 
-9: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
- 
-10: mpi.farm: slave 9 reports: Error in eval(expr, envir, enclos) : yikes
- 
+There were 50 or more warnings (use warnings() to see the first 50)
 > warnings()
 Warning messages:
-1: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+1: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : object 'b' not found
 
-2: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
+2: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : object 'b' not found
 
-3: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+3: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : object 'b' not found
 
-4: mpi.farm: slave 10 reports: Error in eval(expr, envir, enclos) : yikes
+4: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : object 'b' not found
 
-5: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+5: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : object 'b' not found
 
-6: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : yikes
+6: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : object 'b' not found
 
-7: mpi.farm: slave 9 reports: Error in eval(expr, envir, enclos) : yikes
+7: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : object 'b' not found
 
-8: mpi.farm: slave 8 reports: Error in eval(expr, envir, enclos) : yikes
+8: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : object 'b' not found
 
-9: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+9: mpi.farm: slave 6 reports: Error in eval(expr, envir, enclos) : object 'b' not found
 
-10: mpi.farm: slave 9 reports: Error in eval(expr, envir, enclos) : yikes
+10: mpi.farm: slave 8 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+11: mpi.farm: slave 7 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+12: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+13: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
+
+14: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+15: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+16: mpi.farm: slave 6 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+17: mpi.farm: slave 8 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+18: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+
+19: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+20: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+21: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+22: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+
+23: mpi.farm: slave 6 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+24: mpi.farm: slave 8 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+25: mpi.farm: slave 7 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+26: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+27: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+28: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+29: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+30: mpi.farm: slave 6 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+31: mpi.farm: slave 8 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+32: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+33: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : yikes
+
+34: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+35: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+36: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+37: mpi.farm: slave 6 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+38: mpi.farm: slave 7 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+39: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+40: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+41: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+42: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+43: mpi.farm: slave 6 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+44: mpi.farm: slave 8 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+45: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+46: mpi.farm: slave 1 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+47: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+48: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+49: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : object 'b' not found
+
+50: mpi.farm: slave 6 reports: Error in eval(expr, envir, enclos) : object 'b' not found
 
 > 
 > x <- lapply(1:100,function(k)list(a=k,b=0,done=0))

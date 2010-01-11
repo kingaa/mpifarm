@@ -50,6 +50,11 @@ mpi.farm.slave(fn, common=list())
 
   For this reason, it is a good idea to set the seed of the RNG as part of the block of code \code{proc}.
   Storing the state of the RNG before doing so is often desirable, but this can be frustrating if the RNG has not been initialized.  \code{mpi.farm} checks to see if \code{.Random.seed} exists and, if it does not, initializes the RNG with a call to \code{runif}.  Thus, the user is guaranteed that the RNG has been initialized on each slave.
+
+  A user interrupt to \code{mpi.farm} results in an attempt to terminate the slaves cleanly.
+  This may take some time, since each slave has to finish the job it is currently working on before it becomes receptive to messages from the master.
+  A user interrupt issued during the abort process will leave some finished jobs in the MPI queue and therefore compromise the integrity of future parallel computations.
+  For this reason, when it is necessary to abort \code{mpi.farm} and not possible to allow it to terminate cleanly, it is recommended that the slaves be closed (via \code{mpi.close.Rslaves}) and restarted before further parallel computaitons are attempted.
 }
 \value{
   The value returned by \code{mpi.farm} and \code{farm} is a list with one entry for each of the elements in \code{joblist}.

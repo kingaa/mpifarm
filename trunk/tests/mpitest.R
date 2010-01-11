@@ -10,6 +10,10 @@ x <- mpi.farm({set.seed(seed)},joblist=lapply(seeds,function(x)list(seed=x)),inf
 x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
 y <- mpi.farm(a+b,x,info=F)
 
+x <- lapply(1:100,function(k)list(a=k))
+y <- mpi.farm({for (j in 1:10000) j <- j+1; a},x,info=F)
+sum(diff(as.numeric(y))!=1)
+
 y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+b},x,info=F)
 warnings()
 
