@@ -62,79 +62,79 @@ mpi.farm <- function (proc, joblist, common=list(),
   withRestarts(
                {
 
-  for (d in seq(length=nslave)) {                     # initialize the queue
-    if (length(joblist)>0) {            # farm out the work
-      mpi.send.Robj(joblist[1],dest=slaves.at.leisure[[1]],tag=3) # pop the next job off the stack and send it out
-      sent <- sent+1
-      in.progress <- append(in.progress,joblist[1])
-      joblist[[1]] <- NULL
-      slaves.at.leisure[[1]] <- NULL
-      last.etimes <- tail(last.etimes,-1)
-    }
-  }
-  while (rcvd < sent) {
-    res <- mpi.recv.Robj(source=mpi.any.source(),tag=mpi.any.tag()) # wait for someone to finish
-    rcvd <- rcvd+1
-    srctag <- mpi.get.sourcetag()
-    src <- srctag[1]                    # who did it?
-    tag <- srctag[2]                    # were they succesful?
-    slaves.at.leisure <- c(slaves.at.leisure,src)
-    last.etimes <- c(last.etimes,as.numeric(res$etime,units="secs"))
-    identifier <- res$id
-    in.progress[[identifier]] <- NULL
-    piece <- list(res$result)
-    names(piece) <- identifier
-##     srt <- order(last.etimes)
-##     slaves.at.leisure <- slaves.at.leisure[srt]
-##     last.etimes <- last.etimes[srt]
-    if (tag == 33) {                    # success
-      slaveinfo[1,src] <- slaveinfo[1,src]+1
-      slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1]+1
-      if (info) print(slaveinfo)
-      if (is.list(res$result)) {         # are we all finished with this job?
-        stq <- as.logical(eval(parse(text=stop.condn),envir=res$result))
-      } else {
-        stq <- TRUE
-      }
-      if (is.na(stq))
-        stop(sQuote("stop.condition")," must evaluate to TRUE or FALSE")
-      if (stq) {                        # should we stop?
-        finished <- append(finished,piece)
-      } else {
-        joblist <- append(joblist,piece)
-      }
-    } else {                            # an error occurred
-      if (info)
-        message('slave ',format(src),' reports: ',res$result)
-      else
-        warning('mpi.farm: slave ',format(src),' reports: ',res$result,call.=FALSE)
-      finished <- append(finished,piece)
-      nerr <- nerr+1
-    }
-    if ((checkpointing)&&((rcvd%%checkpoint)==0)) {
-      unfinished <- append(joblist,in.progress)
-      if (info) cat(
-                    "writing checkpoint file",
-                    sQuote(checkpoint.file),
-                    "\n#finished =",length(finished)-nerr,
-                    "#unfinished =",length(unfinished),
-                    "#error =",nerr,
-                    "\n"
-                    )
-      save(unfinished,finished,file=checkpoint.file)
-    }
-    if (length(joblist)>0) {       # is there more to do?
-      mpi.send.Robj(joblist[1],dest=slaves.at.leisure[[1]],tag=3) # pop the next job off the stack and send it out
-      sent <- sent+1
-      in.progress <- append(in.progress,joblist[1])
-      joblist[[1]] <- NULL
-      slaves.at.leisure[[1]] <- NULL
-      last.etimes <- tail(last.etimes,-1)
-    }
-  }
-  for (d in live) {
-    mpi.send.Robj(0,dest=d,tag=666)
-  }
+                 for (d in seq(length=nslave)) {                     # initialize the queue
+                   if (length(joblist)>0) {            # farm out the work
+                     mpi.send.Robj(joblist[1],dest=slaves.at.leisure[[1]],tag=3) # pop the next job off the stack and send it out
+                     sent <- sent+1
+                     in.progress <- append(in.progress,joblist[1])
+                     joblist[[1]] <- NULL
+                     slaves.at.leisure[[1]] <- NULL
+                     last.etimes <- tail(last.etimes,-1)
+                   }
+                 }
+                 while (rcvd < sent) {
+                   res <- mpi.recv.Robj(source=mpi.any.source(),tag=mpi.any.tag()) # wait for someone to finish
+                   rcvd <- rcvd+1
+                   srctag <- mpi.get.sourcetag()
+                   src <- srctag[1]                    # who did it?
+                   tag <- srctag[2]                    # were they succesful?
+                   slaves.at.leisure <- c(slaves.at.leisure,src)
+                   last.etimes <- c(last.etimes,as.numeric(res$etime,units="secs"))
+                   identifier <- res$id
+                   in.progress[[identifier]] <- NULL
+                   piece <- list(res$result)
+                   names(piece) <- identifier
+                   ##     srt <- order(last.etimes)
+                   ##     slaves.at.leisure <- slaves.at.leisure[srt]
+                   ##     last.etimes <- last.etimes[srt]
+                   if (tag == 33) {                    # success
+                     slaveinfo[1,src] <- slaveinfo[1,src]+1
+                     slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1]+1
+                     if (info) print(slaveinfo)
+                     if (is.list(res$result)) {         # are we all finished with this job?
+                       stq <- as.logical(eval(parse(text=stop.condn),envir=res$result))
+                     } else {
+                       stq <- TRUE
+                     }
+                     if (is.na(stq))
+                       stop(sQuote("stop.condition")," must evaluate to TRUE or FALSE")
+                     if (stq) {                        # should we stop?
+                       finished <- append(finished,piece)
+                     } else {
+                       joblist <- append(joblist,piece)
+                     }
+                   } else {                            # an error occurred
+                     if (info)
+                       message('slave ',format(src),' reports: ',res$result)
+                     else
+                       warning('mpi.farm: slave ',format(src),' reports: ',res$result,call.=FALSE)
+                     finished <- append(finished,piece)
+                     nerr <- nerr+1
+                   }
+                   if ((checkpointing)&&((rcvd%%checkpoint)==0)) {
+                     unfinished <- append(joblist,in.progress)
+                     if (info) cat(
+                                   "writing checkpoint file",
+                                   sQuote(checkpoint.file),
+                                   "\n#finished =",length(finished)-nerr,
+                                   "#unfinished =",length(unfinished),
+                                   "#error =",nerr,
+                                   "\n"
+                                   )
+                     save(unfinished,finished,file=checkpoint.file)
+                   }
+                   if (length(joblist)>0) {       # is there more to do?
+                     mpi.send.Robj(joblist[1],dest=slaves.at.leisure[[1]],tag=3) # pop the next job off the stack and send it out
+                     sent <- sent+1
+                     in.progress <- append(in.progress,joblist[1])
+                     joblist[[1]] <- NULL
+                     slaves.at.leisure[[1]] <- NULL
+                     last.etimes <- tail(last.etimes,-1)
+                   }
+                 }
+                 for (d in live) {
+                   mpi.send.Robj(0,dest=d,tag=666)
+                 }
                },
                abort=function(){
                  cat("aborting mpi.farm: please be patient!\n\n")
