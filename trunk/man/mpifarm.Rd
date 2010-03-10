@@ -1,20 +1,17 @@
 \name{mpi.farm}
 \alias{mpi.farm}
 \alias{mpi.farm.slave}
-\alias{farm}
 \title{Farm out jobs across a cluster using MPI}
 \description{
   Farm out a procedure (an arbitrary block of R-code) to a cluster of slaves, with different values of the variables.
 }
 \usage{
 mpi.farm(proc, joblist, common = list(), stop.condition = TRUE, info = TRUE,
-         checkpoint = NULL, checkpoint.file = NULL
-         )
-farm(proc, joblist, common = list(), stop.condition = TRUE, info = TRUE)
+         checkpoint = NULL, checkpoint.file = NULL)
 mpi.farm.slave(fn, common=list())
 }
 \arguments{
-  \item{proc}{An arbitrary block of R code}
+  \item{proc}{An arbitrary block of \R code}
   \item{joblist}{
     A list of named lists.
     Each element is a named list to be treated as an environment defining some or all of the variables in \code{proc}.}
@@ -37,15 +34,19 @@ mpi.farm.slave(fn, common=list())
     This file will contain two lists: \code{finished}, consisting of those jobs in \code{joblist} that are fully completed and
     \code{unfinished}, consisting of that portion of \code{joblist} that has not yet been fully finished.
   }
-  \item{fn}{A arbitrary block of R code, deparsed to a string.}
+  \item{fn}{A arbitrary block of \R code, deparsed to a string.}
 }
 \details{
+  \code{mpi.farm} will execute the code in \code{proc} repeatedly in environments defined by the entries of \code{joblist} and the common environment \code{common}.
+  If \pkg{Rmpi} slaves have been spawned, the jobs will be farmed out to them according to a load-balancing algorithm;
+  if no slaves are running, or \pkg{Rmpi} has not been loaded, the jobs will be executed serially.
+
   \code{mpi.farm.slave} does the work on the slaves and should never need to be called by the user.
   This function is broadcast to the slaves, so that they will be able to do their part.
   \code{mpi.farm} broadcasts the \code{mpi.farm.slave} to the slaves before beginning to assign jobs.
 
   For many of the applications envisioned, the jobs the slaves are assigned involve stochastic simulations.
-  Because of the way that R initializes its pseudorandom number generators (RNGs), it is easy to make the mistake of failing to initialize the RNGs on different slaves to different states.
+  Because of the way that \R initializes its pseudorandom number generators (RNGs), it is easy to make the mistake of failing to initialize the RNGs on different slaves to different states.
   If one fails to do this (and doesn't use a sophisticated parallel RNG like SPRNG) then it is possible that the random numbers generated on different slaves will be correlated or even identical.
 
   For this reason, it is a good idea to set the seed of the RNG as part of the block of code \code{proc}.
@@ -61,28 +62,34 @@ mpi.farm.slave(fn, common=list())
   The elements in the result correspond to the elements in the \code{joblist} argument.
 }
 \author{Aaron A. King}
-\note{}
-\seealso{}
+\note{
+  In serial mode, no checkpointing is done: the arguments pertaining to checkpointing are ignored.
+}
 \examples{
   \dontrun{
     mpi.spawn.Rslaves(needlog=F)
 
     x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
     y <- mpi.farm(a+b,x)
-    print(y)
+    print(unlist(y))
 
     y <- mpi.farm({if(runif(1)<0.5)stop('yikes');a+b},x)
-    print(y)
+    print(unlist(y))
 
     y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+b},x,info=F)
-    print(y)
+    y <- y[!sapply(y,inherits,"try-error")]
+    print(unlist(y))
     warnings()
 
     x <- lapply(1:100,function(k)list(a=k,b=0,done=0))
     y <- mpi.farm({b <- b+rnorm(1); list(a=a,b=b,done=done+1)},x,stop.condition=((abs(b)>2)|(done>10)))
 
     mpi.close.Rslaves()
+
   }
+## run some jobs in serial mode
+  x <- lapply(1:100,function(k)list(a=k,b=0,done=0))
+  y <- mpi.farm({b <- b+rnorm(1); list(a=a,b=b,done=done+1)},x,stop.condition=((abs(b)>2)|(done>10)))
 }
 \keyword{programming}
 \keyword{utilities}

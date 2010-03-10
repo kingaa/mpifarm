@@ -1,7 +1,6 @@
 export(
        mpi.farm,
        mpi.farm.slave,
-       farm,
        mif.farm,
        mif.farm.joblist,
        multistart.optim.farm,
