@@ -7,8 +7,9 @@
 }
 \usage{
 mpi.farm(proc, joblist, common = list(), stop.condition = TRUE, info = TRUE,
-         checkpoint = NULL, checkpoint.file = NULL)
-mpi.farm.slave(fn, common=list())
+         checkpoint = NULL, checkpoint.file = NULL,
+         verbose = getOption("verbose"))
+mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
 }
 \arguments{
   \item{proc}{An arbitrary block of \R code}
@@ -33,6 +34,9 @@ mpi.farm.slave(fn, common=list())
     If \code{checkpoint.file} is specified, then once every \code{checkpoint} jobs are finished, checkpoint information will be saved to a binary-format file with this name.
     This file will contain two lists: \code{finished}, consisting of those jobs in \code{joblist} that are fully completed and
     \code{unfinished}, consisting of that portion of \code{joblist} that has not yet been fully finished.
+  }
+  \item{verbose}{
+    logical; if \code{TRUE}, information will be printed both by the master and the slaves.
   }
   \item{fn}{A arbitrary block of \R code, deparsed to a string.}
 }

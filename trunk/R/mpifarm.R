@@ -1,9 +1,16 @@
 ### farm out a bunch of jobs in parallel if possible, run serially if not
 mpi.farm <- function (proc, joblist, common=list(),
                       stop.condition = TRUE, info = TRUE,
-                      checkpoint = NULL, checkpoint.file = NULL) {
+                      checkpoint = NULL, checkpoint.file = NULL,
+                      verbose = getOption("verbose")) {
   ncpus <- try(mpi.comm.size(),silent=TRUE)
-  if ((!inherits(ncpus,"try-error"))&&(mpi.comm.size() > 1)) { # run in parallel mode
+  if (!is.list(joblist))
+    stop("joblist must be a list")
+  if (is.null(names(joblist)))
+    names(joblist) <- seq(length=length(joblist))
+  else
+    names(joblist) <- make.unique(names(joblist))
+  if ((!inherits(ncpus,"try-error"))&&(ncpus > 1)) { # run in parallel mode
     if (is.null(checkpoint.file)) {
       if (!is.null(checkpoint))
         stop("for checkpointing to work, ",sQuote("checkpoint.file")," must be set",call.=FALSE)
@@ -36,18 +43,14 @@ mpi.farm <- function (proc, joblist, common=list(),
     mpi.bcast.cmd(if(!exists('.Random.seed')) runif(1)) # initialize the RNG if necessary
     fn <- deparse(substitute(proc))      # deparse the procedure to text
     stop.condn <- deparse(substitute(stop.condition)) # deparse the stop condition
-    mpi.remote.exec(mpi.farm.slave,fn,common,ret=FALSE) # start up the slaves
+    mpi.remote.exec(mpi.farm.slave,fn,common,verbose=verbose,ret=FALSE) # start up the slaves
     finished <- list()
     in.progress <- list()
-    if (is.null(names(joblist)))
-      names(joblist) <- seq(length=length(joblist))
-    else
-      names(joblist) <- make.unique(names(joblist))
     nslave <- mpi.comm.size()-1
     if (nslave > length(joblist)) {
       warning("mpi.farm warning: more slaves than jobs",call.=FALSE)  
     }
-    slaves.at.leisure <- as.list(1:nslave)
+    slaves.at.leisure <- as.list(seq(from=1,to=nslave,by=1))
     last.etimes <- numeric(nslave)
     live <- seq(from=1,to=nslave,by=1)    # numbers of live slaves
     slaveinfo <- matrix(
@@ -178,7 +181,6 @@ mpi.farm <- function (proc, joblist, common=list(),
                        )
                  }
                  )
-    finished <- finished[order(as.numeric(names(finished)))]
   } else {                 # no slaves are running: run in serial mode
     if (!exists('.Random.seed')) runif(1)
     fun <- substitute(proc)
@@ -220,10 +222,9 @@ mpi.farm <- function (proc, joblist, common=list(),
 }
 
 ## slave procedure for mpi.farm
-mpi.farm.slave <- function (fn, common=list()) { 
+mpi.farm.slave <- function (fn, common = list(), verbose = getOption("verbose")) { 
   proc <- parse(text=fn)
   me <- mpi.comm.rank()
-  verbose <- getOption("verbose")
   go <- TRUE
   attach(common,warn.conflicts=FALSE)
   while (go) {
