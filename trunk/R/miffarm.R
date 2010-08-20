@@ -146,7 +146,6 @@ mif.farm <- function (joblist,
                                            ic.lag=ic.lag,
                                            var.factor=var.factor,
                                            weighted=(done>unweighted),
-                                           warn=FALSE,
                                            max.fail=max.fail
                                            )
                            done <- done+gran
