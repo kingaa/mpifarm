@@ -1,0 +1,217 @@
+2010-08-20  kingaa
+
+	* [r67] DESCRIPTION, R/miffarm.R: - warn option
+
+2010-03-15  kingaa
+
+	* [r66] DESCRIPTION, R/mpifarm.R, man/mpifarm.Rd: - add 'verbose'
+	  option
+
+2010-03-10  kingaa
+
+	* [r65] DESCRIPTION, NAMESPACE, R/mpifarm.R,
+	  inst/scripts/miffit.pbs, inst/scripts/simple.pbs,
+	  inst/scripts/template.pbs, man/mpifarm.Rd, tests/mpitest.R,
+	  tests/mpitest.Rout.save: - now mpi.farm will run in serial mode
+	  if no Rmpi slaves are running or if Rmpi has not been loaded
+
+2010-02-11  kingaa
+
+	* [r64] DESCRIPTION: - change dependencies on pomp, subplex to
+	  suggestions
+
+2010-01-11  kingaa
+
+	* [r63] R/mpifarm.R: - fix the indenting
+	* [r62] DESCRIPTION, R/mpifarm.R, man/mpifarm.Rd, tests/mpitest.R,
+	  tests/mpitest.Rout.save: - interruption of mpi.farm now results
+	  in an attempt to clean up the slaves.
+	  this makes use of 'withRestarts'.
+
+2010-01-08  kingaa
+
+	* [r61] DESCRIPTION, R/mpifarm.R: - keep track of errors
+
+2009-10-23  kingaa
+
+	* [r60] DESCRIPTION, inst/scripts/miffit.R: - bug fix
+
+2009-10-22  kingaa
+
+	* [r59] DESCRIPTION, inst/scripts/miffit.R: - bug fix in miffit.R
+	  script
+	* [r58] R/miffarm.R, R/mpifarm.R, man/miffarm.Rd: - add ability to
+	  turn off local checkpointing
+
+2009-10-08  kingaa
+
+	* [r57] DESCRIPTION, R/mpifarm.R: - sort slaves.at.leisure by
+	  elapsed time
+
+2009-10-07  kingaa
+
+	* [r56] R/mpifarm.R: - bug fix
+	* [r55] DESCRIPTION, R/mpifarm.R: - try to recycle jobs to the
+	  slaves that are faster
+	  - version 1.9-4
+	* [r54] inst/scripts/miffit.R: - save some diagnostic information
+	  in a separate file
+
+2009-10-05  kingaa
+
+	* [r53] DESCRIPTION, R/mpifarm.R: - keep a list of slaves at
+	  leisure
+	  - when jobs remain, send out to the slave that has been waiting
+	  longest. chances are good that this slave is the quickest
+
+2009-07-27  kingaa
+
+	* [r52] DESCRIPTION, R/multistart.optim.R, man/multistart.optim.Rd:
+	  add subplex functionality for multistart.optim.farm
+
+2009-07-20  kingaa
+
+	* [r51] R/multistart.optim.R, inst/scripts/simple.R: bug fix
+	* [r50] DESCRIPTION, NAMESPACE, R/multistart.optim.R,
+	  man/multistart.optim.Rd: add a new function
+	  'multistart.optim.farm' to perform a multistart/multistage
+	  optimization
+
+2009-05-13  kingaa
+
+	* [r49] DESCRIPTION, R/miffarm.R: residuals are provided as lists
+	* [r48] inst/scripts/miffit.R: don't save imagefile before starting
+	  mif.farm
+
+2009-05-12  kingaa
+
+	* [r47] GPL, inst/GPL, inst/scripts/mpitest.R,
+	  inst/scripts/mpitest.pbs, tests, tests/mpitest.R,
+	  tests/mpitest.Rout.save, tests/simple.R, tests/simple.Rout.save:
+	  add some tests
+	* [r46] R/miffarm.R: allow Np to be set in pfilter
+	* [r45] R/miffarm.R:
+	* [r44] R/miffarm.R: bug fix
+	* [r43] DESCRIPTION, R/miffarm.R: now if nmifs=0 and filter.q=TRUE,
+	  just do the particle filtering
+	  return the pred.mean, pred.var, filter.mean, cond.loglik, and
+	  eff.sample.size as well
+	* [r42] ChangeLog, DESCRIPTION, NAMESPACE, R/miffarm.R,
+	  R/mpifarm.R, inst/scripts/miffit.R, inst/scripts/mpitest.pbs,
+	  inst/scripts/mpitest.sh, inst/scripts/simple.pbs,
+	  inst/scripts/simple.sh, inst/scripts/template.pbs,
+	  man/miffarm.Rd: rename mif.farm.init to mif.farm.joblist
+	  change handling of ... in mif.farm.joblist and mif.farm
+	  make the scripts compatible with PBS
+	* [r41] inst/scripts/mpitest.sh:
+	* [r40] inst/scripts/simple.sh:
+	* [r39] inst/scripts/template.pbs, inst/scripts/test.pbs:
+
+2009-05-11  kingaa
+
+	* [r38] DESCRIPTION, R/miffarm.R, R/mpifarm.R,
+	  inst/scripts/test.pbs: small changes
+	* [r37] man/miffarm.Rd:
+	* [r36] man/miffarm.Rd:
+	* [r35] DESCRIPTION, NAMESPACE, R/miffarm.R, R/partrans.R,
+	  inst/scripts/miffit.R, inst/scripts/test.pbs, man/miffarm.Rd: add
+	  'mif.farm' and friends to run an iterated filtering farm
+
+2009-05-08  kingaa
+
+	* [r34] inst/scripts/miffit.R: fix bug that occurs when init.disp
+	  != 0
+	* [r33] inst/scripts/miffit.R:
+	* [r32] inst/scripts/miffit.R:
+
+2009-05-05  kingaa
+
+	* [r31] inst/scripts/miffit.R:
+	* [r30] DESCRIPTION, R/mpifarm.R, inst/scripts/miffit.R,
+	  inst/scripts/mpitest.R, man/mpifarm.Rd: support for checkpointing
+
+2009-05-02  kingaa
+
+	* [r29] DESCRIPTION: version 1.7-2
+	* [r28] inst/scripts/miffit.R: save all results, not just the
+	  "best"
+	* [r27] inst/scripts/miffit.R:
+
+2009-04-22  kingaa
+
+	* [r26] DESCRIPTION, R/mpifarm.R, inst/scripts/simple.R,
+	  man/mpifarm.Rd: the joblist is now treated as a stack.
+	  when a job is sent out, it is removed from the stack.
+	  this should keep the memory allocation on the master from
+	  growing.
+
+2009-04-21  kingaa
+
+	* [r25] inst/scripts/miffit.R: /state/partition1 -> /scratch
+
+2008-08-01  kingaa
+
+	* [r24] inst/scripts/simple.R, inst/scripts/simple.sh: a simple
+	  parallel job
+	* [r23] inst/scripts/mpitest.R, inst/scripts/mpitest.sh: test
+	  scripts
+
+2008-07-30  kingaa
+
+	* [r22] DESCRIPTION: *** empty log message ***
+	* [r21] DESCRIPTION: *** empty log message ***
+	* [r20] DESCRIPTION, R/farm.R, R/mpifarm.R: *** empty log message
+	  ***
+	* [r19] inst/scripts/miffit.R: *** empty log message ***
+	* [r18] inst, inst/scripts, inst/scripts/miffit.R: *** empty log
+	  message ***
+
+2007-06-18  kingaa
+
+	* [r17] ChangeLog, DESCRIPTION: *** empty log message ***
+	* [r16] R/mpifarm.R: add stop condition option
+	* [r15] man/mpifarm.Rd: add stop.condition option
+	* [r14] ChangeLog, GPL: Initial revision
+
+2006-12-20  kingaa
+
+	* [r13] DESCRIPTION, NAMESPACE, R/mpifarm.R, man/mpifarm.Rd:
+	  renamed "mpi.farm"
+
+2006-08-17  kingaa
+
+	* [r12] DESCRIPTION, R/mpifarm.R, man/mpifarm.Rd: the slave
+	  routines are farmed out automatically
+	  the RNGs are initialized if they are not already
+	  better documentation
+	  an example (not run) is provided
+	  pdapply and plapply will return an error if no slaves are running
+	  (mpi.comm.size() < 2)
+
+2006-08-16  kingaa
+
+	* [r11] man/mpifarm.Rd: an example (not run) is now included
+
+2006-07-26  kingaa
+
+	* [r10] DESCRIPTION: better information when info=T
+	* [r9] R/mpifarm.R: better information during runs
+	* [r8] man/mpifarm.Rd: *** empty log message ***
+
+2006-05-23  kingaa
+
+	* [r7] DESCRIPTION, R/mpifarm.R, man/mpifarm.Rd: *** empty log
+	  message ***
+	* [r6] man/mpifarm.Rd: *** empty log message ***
+	* [r5] DESCRIPTION, NAMESPACE: Initial revision
+	* [r4] man/mpifarm.Rd: *** empty log message ***
+
+2006-05-17  kingaa
+
+	* [r3] R, R/mpifarm.R: Initial revision
+	* [r2] man, man/mpifarm.Rd: Initial revision
+
+2006-05-17  
+
+	* [r1] .: New repository initialized by cvs2svn.
+
