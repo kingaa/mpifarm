@@ -50,4 +50,4 @@ max(abs(diff(y1-y2)))
 x <- lapply(1:100,function(k)list(a=k,b=0,done=0))
 y <- mpi.farm({print(c(a,b,done));list(a=a,b=b+rnorm(1),done=done+1)},x,stop.condition=((abs(b)>2)|(done>10)),info=F)
 
-mpi.quit()
+mpi.exit()
