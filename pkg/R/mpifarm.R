@@ -186,11 +186,10 @@ mpi.farm <- function (proc, joblist, common=list(),
     fun <- substitute(proc)
     stop.condn <- substitute(stop.condition)
     finished <- list()
-    attach(common)
     while (length(joblist)>0) {
       identifier <- names(joblist)[1]
       res <- try(
-                 eval(fun,envir=joblist[[1]]),
+                 evalq(eval(fun,envir=joblist[[1]]),envir=common),
                  silent=TRUE
                  )
       if (is.list(res)) {         # are we all finished with this job?
@@ -216,7 +215,6 @@ mpi.farm <- function (proc, joblist, common=list(),
           warning("mpi.farm (serial) reports: ",res)
       }
     }
-    detach(common)
   }
   finished
 }
@@ -226,7 +224,6 @@ mpi.farm.slave <- function (fn, common = list(), verbose = getOption("verbose"))
   proc <- parse(text=fn)
   me <- mpi.comm.rank()
   go <- TRUE
-  attach(common,warn.conflicts=FALSE)
   while (go) {
     if (verbose)
       cat("slave",me,"awaiting instructions\n")
@@ -238,7 +235,7 @@ mpi.farm.slave <- function (fn, common = list(), verbose = getOption("verbose"))
         cat("slave",me,"getting to work\n")
       tic <- Sys.time()
       result <- try(
-                    eval(proc,envir=rcv[[1]]),
+                    evalq(eval(proc,envir=rcv[[1]]),envir=common),
                     silent=FALSE
                     )
       toc <- Sys.time()
@@ -257,5 +254,4 @@ mpi.farm.slave <- function (fn, common = list(), verbose = getOption("verbose"))
       go <- FALSE                       # terminate
     }
   }
-  detach(common)
 }
