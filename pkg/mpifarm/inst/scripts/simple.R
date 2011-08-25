@@ -27,7 +27,7 @@ job.result <- mpi.farm(
                         )
                       )
 toc <- Sys.time()
-x <- do.call(rbind,job.result)
+x <- as.data.frame(do.call(rbind,job.result))
 write.csv(x,'job.csv')
 print(toc-tic)
 warnings()

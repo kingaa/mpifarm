@@ -1,5 +1,7 @@
 2010-11-14  kingaa
 
+	* [r73] inst/ChangeLog, tests/mpitest.R, tests/simple.R: - use
+	  mpi.exit instead of mpi.quit in the tests
 	* [r72] DESCRIPTION, R/mpifarm.R, inst/ChangeLog: - replace
 	  attach/detach calls in slave with nested evalq/eval
 
