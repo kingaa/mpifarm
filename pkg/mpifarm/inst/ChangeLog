@@ -1,3 +1,10 @@
+2011-08-26  kingaa
+
+	* [r76] DESCRIPTION, R/mpifarm.R, inst/ChangeLog, man/mpifarm.Rd: -
+	  add new optional argument 'finished' to 'mpi.farm' that prepends
+	  partial results from checkpoint files to results from the current
+	  calculation
+
 2011-08-25  kingaa
 
 	* [r75] DESCRIPTION, inst/ChangeLog, inst/scripts/simple.R: - minor
