@@ -6,7 +6,8 @@
   Farm out a procedure (an arbitrary block of R-code) to a cluster of slaves, with different values of the variables.
 }
 \usage{
-mpi.farm(proc, joblist, common = list(), stop.condition = TRUE, info = TRUE,
+mpi.farm(proc, joblist, common = list(), finished = list(),
+         stop.condition = TRUE, info = TRUE,
          checkpoint = NULL, checkpoint.file = NULL,
          verbose = getOption("verbose"))
 mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
@@ -17,6 +18,10 @@ mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
     A list of named lists.
     Each element is a named list to be treated as an environment defining some or all of the variables in \code{proc}.}
   \item{common}{An optional list of variables common to all the jobs.}
+  \item{finished}{
+    An optional list of already-finished computations (e.g., from a checkpoint file).
+    This will be prepended to the results from the current computation.
+  }
   \item{stop.condition}{
     This will be evaluated in the context of the return-value of \code{proc}.
     For this option to have an effect, \code{proc} must return a named list and \code{stop.condition} must evaluate to \code{TRUE} or \code{FALSE} in the context of that list.
@@ -63,7 +68,8 @@ mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
 }
 \value{
   The value returned by \code{mpi.farm} and \code{farm} is a list with one entry for each of the elements in \code{joblist}.
-  The elements in the result correspond to the elements in the \code{joblist} argument.
+  The elements in the result correspond to the elements in the \code{joblist} argument;
+  the list \code{finished} is prepended.
 }
 \author{Aaron A. King}
 \note{

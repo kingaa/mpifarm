@@ -1,5 +1,6 @@
 ### farm out a bunch of jobs in parallel if possible, run serially if not
 mpi.farm <- function (proc, joblist, common=list(),
+                      finished = list(),
                       stop.condition = TRUE, info = TRUE,
                       checkpoint = NULL, checkpoint.file = NULL,
                       verbose = getOption("verbose")) {
@@ -185,7 +186,6 @@ mpi.farm <- function (proc, joblist, common=list(),
     if (!exists('.Random.seed')) runif(1)
     fun <- substitute(proc)
     stop.condn <- substitute(stop.condition)
-    finished <- list()
     while (length(joblist)>0) {
       identifier <- names(joblist)[1]
       res <- try(
