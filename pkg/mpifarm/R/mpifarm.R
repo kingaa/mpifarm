@@ -45,7 +45,6 @@ mpi.farm <- function (proc, joblist, common=list(),
     fn <- deparse(substitute(proc))      # deparse the procedure to text
     stop.condn <- deparse(substitute(stop.condition)) # deparse the stop condition
     mpi.remote.exec(mpi.farm.slave,fn,common,verbose=verbose,ret=FALSE) # start up the slaves
-    finished <- list()
     in.progress <- list()
     nslave <- mpi.comm.size()-1
     if (nslave > length(joblist)) {
