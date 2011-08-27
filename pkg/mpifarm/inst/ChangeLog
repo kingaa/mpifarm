@@ -1,5 +1,11 @@
+2011-08-27  kingaa
+
+	* [r79] DESCRIPTION:
+	* [r78] R/mpifarm.R: - bug fix
+
 2011-08-26  kingaa
 
+	* [r77] inst/ChangeLog:
 	* [r76] DESCRIPTION, R/mpifarm.R, inst/ChangeLog, man/mpifarm.Rd: -
 	  add new optional argument 'finished' to 'mpi.farm' that prepends
 	  partial results from checkpoint files to results from the current
