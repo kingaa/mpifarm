@@ -1,5 +1,11 @@
+2011-08-28  kingaa
+
+	* [r81] DESCRIPTION, tests/mpitest.R, tests/mpitest.Rout.save,
+	  tests/simple.R, tests/simple.Rout.save: - better tests
+
 2011-08-27  kingaa
 
+	* [r80] inst/ChangeLog:
 	* [r79] DESCRIPTION:
 	* [r78] R/mpifarm.R: - bug fix
 
