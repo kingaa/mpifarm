@@ -19,8 +19,15 @@ mpi.farm <- function (proc, joblist, common=list(),
     } else {
       if (!is.character(checkpoint.file))
         stop(sQuote("checkpoint.file")," must be a filename",call.=FALSE)
-      if (file.exists(checkpoint.file))
-        stop("file ",sQuote(checkpoint.file)," exists",call.=FALSE)
+      if (file.exists(checkpoint.file)) {
+        backup.file <- paste(checkpoint.file,"bak",sep=".")
+        if (file.exists(backup.file)) {
+          warning("removing old backup file ",sQuote(backup.file),call.=FALSE)
+          file.remove(backup.file)
+        }
+        file.rename(from=checkpoint.file,to=backup.file)
+        warning("file ",sQuote(checkpoint.file)," exists, backup created",call.=FALSE)
+      }
       if ((is.null(checkpoint))||(checkpoint<0))
         stop("for checkpointing to work, ",sQuote("checkpoint")," must be set to a positive integer",call.=FALSE)
       checkpoint <- as.integer(checkpoint)

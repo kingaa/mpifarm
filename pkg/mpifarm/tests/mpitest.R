@@ -24,7 +24,6 @@ seeds <- as.integer(ceiling(runif(n=321,1,2^31)))
 x <- lapply(1:321,function(k)list(a=k,b=10*k,seed=seeds[k]))
 y1 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=x,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 load("mpitest.rda")
-file.remove("mpitest.rda")
 y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 y1 <- y1[order(names(y1))]
 y2 <- y2[order(names(y2))]
@@ -41,8 +40,6 @@ y <- mpi.farm(
               checkpoint=500,
               info=FALSE
               )
-
-file.remove("mpitest.rda")
 
 seeds <- as.integer(ceiling(runif(n=100,1,2^31)))
 x1 <- lapply(1:100,function(k)list(a=k,b=0,done=0,seed=seeds[k]))
