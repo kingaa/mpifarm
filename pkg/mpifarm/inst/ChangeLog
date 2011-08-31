@@ -1,5 +1,12 @@
+2011-08-29  kingaa
+
+	* [r83] DESCRIPTION, R/mpifarm.R, tests/mpitest.R: - when
+	  checkpoint file exists, do not stop but rather back the existing
+	  file up with a warning
+
 2011-08-28  kingaa
 
+	* [r82] inst/ChangeLog:
 	* [r81] DESCRIPTION, tests/mpitest.R, tests/mpitest.Rout.save,
 	  tests/simple.R, tests/simple.Rout.save: - better tests
 
