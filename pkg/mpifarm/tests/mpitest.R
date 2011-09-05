@@ -29,6 +29,20 @@ y1 <- y1[order(names(y1))]
 y2 <- y2[order(names(y2))]
 stopifnot(identical(y1,y2))
 
+unfinished <- x
+finished <- list()
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+
 x <- lapply(1:50,function(k)list(a=k,b=10*k,done=FALSE))
 y <- mpi.farm(
               {

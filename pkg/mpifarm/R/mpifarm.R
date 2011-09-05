@@ -5,6 +5,7 @@ mpi.farm <- function (proc, joblist, common=list(),
                       checkpoint = NULL, checkpoint.file = NULL,
                       verbose = getOption("verbose")) {
   ncpus <- try(mpi.comm.size(),silent=TRUE)
+  max.backup <- 9
   if (!is.list(joblist))
     stop("joblist must be a list")
   if (is.null(names(joblist)))
@@ -20,8 +21,15 @@ mpi.farm <- function (proc, joblist, common=list(),
       if (!is.character(checkpoint.file))
         stop(sQuote("checkpoint.file")," must be a filename",call.=FALSE)
       if (file.exists(checkpoint.file)) {
-        backup.file <- paste(checkpoint.file,"bak",sep=".")
-        if (file.exists(backup.file)) {
+        backup.file <- paste(checkpoint.file,"bak-%d",sep=".")
+        nbkups <- 1
+        while (file.exists(sprintf(backup.file,nbkups))&&(nbkups<=max.backup)) {
+          nbkups <- nbkups+1
+        }
+        if (nbkups<=max.backup)
+          backup.file <- sprintf(backup.file,nbkups)
+        else {
+          backup.file <- sprintf(backup.file,1)
           warning("removing old backup file ",sQuote(backup.file),call.=FALSE)
           file.remove(backup.file)
         }
