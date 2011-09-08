@@ -9,6 +9,7 @@
 mpi.farm(proc, joblist, common = list(), finished = list(),
          stop.condition = TRUE, info = TRUE,
          checkpoint = NULL, checkpoint.file = NULL,
+         max.backup = 20,
          verbose = getOption("verbose"))
 mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
 }
@@ -39,6 +40,9 @@ mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
     If \code{checkpoint.file} is specified, then once every \code{checkpoint} jobs are finished, checkpoint information will be saved to a binary-format file with this name.
     This file will contain two lists: \code{finished}, consisting of those jobs in \code{joblist} that are fully completed and
     \code{unfinished}, consisting of that portion of \code{joblist} that has not yet been fully finished.
+  }
+  \item{max.backup}{
+    positive integer; maximum number of backup checkpoint files that will be created.
   }
   \item{verbose}{
     logical; if \code{TRUE}, information will be printed both by the master and the slaves.

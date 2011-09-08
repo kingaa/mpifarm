@@ -3,43 +3,42 @@ mpi.farm <- function (proc, joblist, common=list(),
                       finished = list(),
                       stop.condition = TRUE, info = TRUE,
                       checkpoint = NULL, checkpoint.file = NULL,
+                      max.backup = 20,
                       verbose = getOption("verbose")) {
   ncpus <- try(mpi.comm.size(),silent=TRUE)
-  max.backup <- 9
+  max.backup <- as.integer(max.backup)
+  if (max.backup < 1) stop(sQuote("max.backup")," must be a positive integer")
   if (!is.list(joblist))
     stop("joblist must be a list")
   if (is.null(names(joblist)))
     names(joblist) <- seq(length=length(joblist))
   else
     names(joblist) <- make.unique(names(joblist))
-  if ((!inherits(ncpus,"try-error"))&&(ncpus > 1)) { # run in parallel mode
-    if (is.null(checkpoint.file)) {
-      if (!is.null(checkpoint))
-        stop("for checkpointing to work, ",sQuote("checkpoint.file")," must be set",call.=FALSE)
-      checkpointing <- FALSE
-    } else {
-      if (!is.character(checkpoint.file))
-        stop(sQuote("checkpoint.file")," must be a filename",call.=FALSE)
-      if (file.exists(checkpoint.file)) {
-        backup.file <- paste(checkpoint.file,"bak-%d",sep=".")
-        nbkups <- 1
-        while (file.exists(sprintf(backup.file,nbkups))&&(nbkups<=max.backup)) {
-          nbkups <- nbkups+1
-        }
-        if (nbkups<=max.backup)
-          backup.file <- sprintf(backup.file,nbkups)
-        else {
-          backup.file <- sprintf(backup.file,1)
-          warning("removing old backup file ",sQuote(backup.file),call.=FALSE)
-          file.remove(backup.file)
-        }
-        file.rename(from=checkpoint.file,to=backup.file)
-        warning("file ",sQuote(checkpoint.file)," exists, backup created",call.=FALSE)
+  checkpointing <- FALSE
+  if (is.null(checkpoint.file)) {       # no checkpointing
+    if (!is.null(checkpoint))
+      stop("for checkpointing to work, ",sQuote("checkpoint.file")," must be set",call.=FALSE)
+  } else {                              # checkpointing
+    if (!is.character(checkpoint.file))
+      stop(sQuote("checkpoint.file")," must be a filename",call.=FALSE)
+    if (file.exists(checkpoint.file)) {
+      backup.file <- paste(checkpoint.file,"bak-%d",sep=".")
+      nbkups <- 1
+      while (file.exists(sprintf(backup.file,nbkups))&&(nbkups<=max.backup)) {
+        nbkups <- nbkups+1
       }
-      if ((is.null(checkpoint))||(checkpoint<0))
-        stop("for checkpointing to work, ",sQuote("checkpoint")," must be set to a positive integer",call.=FALSE)
-      checkpoint <- as.integer(checkpoint)
-      if (checkpoint>0) {
+      if (nbkups<=max.backup)
+        backup.file <- sprintf(backup.file,nbkups)
+      else
+        stop("mpifarm error: ",max.backup," backup files already exist")
+      file.copy(from=checkpoint.file,to=backup.file)
+      warning("file ",sQuote(checkpoint.file)," exists, backup ",sQuote(backup.file)," created",call.=FALSE)
+    }
+    if ((is.null(checkpoint))||(checkpoint<0))
+      stop("for checkpointing to work, ",sQuote("checkpoint")," must be set to a positive integer",call.=FALSE)
+    checkpoint <- as.integer(checkpoint)
+    if (checkpoint>0) {
+      if (!file.exists(checkpoint.file)) {
         file.ok <- file.create(checkpoint.file)
         if (!file.ok) {
           stop(
@@ -50,11 +49,11 @@ mpi.farm <- function (proc, joblist, common=list(),
         } else {
           file.remove(checkpoint.file)
         }
-        checkpointing <- TRUE
-      } else {
-        checkpointing <- FALSE
       }
+      checkpointing <- TRUE
     }
+  }
+  if ((!inherits(ncpus,"try-error"))&&(ncpus > 1)) { # run in parallel mode
     mpi.bcast.Robj2slave(mpi.farm.slave)  # broadcast the slave function
     mpi.bcast.cmd(if(!exists('.Random.seed')) runif(1)) # initialize the RNG if necessary
     fn <- deparse(substitute(proc))      # deparse the procedure to text
@@ -229,6 +228,10 @@ mpi.farm <- function (proc, joblist, common=list(),
           warning("mpi.farm (serial) reports: ",res)
       }
     }
+  }
+  if (checkpointing) {
+    unfinished <- joblist
+    save(unfinished,finished,file=checkpoint.file)
   }
   finished
 }
