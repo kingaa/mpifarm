@@ -1,3 +1,21 @@
+2011-09-08  kingaa
+
+	* [r87] DESCRIPTION:
+	* [r86] R/mpifarm.R, man/mpifarm.Rd, tests/mpitest.Rout.save: -
+	  change the way checkpointing is handled. Now the checkpoint file
+	  is also updated just before exiting. Maximum number of
+	  permissible backups is an argument: if the maximum number of
+	  backup files exist, an error is generated.
+
+2011-09-05  kingaa
+
+	* [r85] DESCRIPTION, R/mpifarm.R, tests/mpitest.R: - save up to 9
+	  backups
+
+2011-08-31  kingaa
+
+	* [r84] inst/ChangeLog:
+
 2011-08-29  kingaa
 
 	* [r83] DESCRIPTION, R/mpifarm.R, tests/mpitest.R: - when
