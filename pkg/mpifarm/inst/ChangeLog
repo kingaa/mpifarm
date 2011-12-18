@@ -1,2 +1,72 @@
-View the SVN log at:
-	https://r-forge.r-project.org/scm/viewvc.php/pkg/mpifarm/?root=mpifarm&view=log
+2011-12-18  kingaa
+
+	* [r91] DESCRIPTION, R/mpifarm.R, R/mpifarmer.R, man/mpifarm.Rd,
+	  tests/farmer.R, tests/mpitest.R, tests/mpitest.Rout.save,
+	  tests/simple.R, tests/simple.Rout.save: - internal changes to the
+	  master function to minimize memory allocation
+	  - changes to the checkpoint system: 'joblist' and 'status' are
+	  now saved instead of 'finished' and 'unfinished' lists
+	  - change to 'mpi.farm' documentation in anticipation of chunking
+
+2011-09-15  kingaa
+
+	* [r90] inst/ChangeLog: - replace the explicit changelog with a URL
+	  to the r-forge svn log for the package
+
+2011-09-11  kingaa
+
+	* [r89] tests/farmer.R: - add test script for 'mpi.farmer'
+	* [r88] DESCRIPTION, R/mpifarmer.R, inst/ChangeLog: - add
+	  'mpi.farmer' but do not export yet
+
+2011-09-08  kingaa
+
+	* [r87] DESCRIPTION:
+	* [r86] R/mpifarm.R, man/mpifarm.Rd, tests/mpitest.Rout.save: -
+	  change the way checkpointing is handled. Now the checkpoint file
+	  is also updated just before exiting. Maximum number of
+	  permissible backups is an argument: if the maximum number of
+	  backup files exist, an error is generated.
+
+2011-09-05  kingaa
+
+	* [r85] DESCRIPTION, R/mpifarm.R, tests/mpitest.R: - save up to 9
+	  backups
+
+2011-08-31  kingaa
+
+	* [r84] inst/ChangeLog:
+
+2011-08-29  kingaa
+
+	* [r83] DESCRIPTION, R/mpifarm.R, tests/mpitest.R: - when
+	  checkpoint file exists, do not stop but rather back the existing
+	  file up with a warning
+
+2011-08-28  kingaa
+
+	* [r82] inst/ChangeLog:
+	* [r81] DESCRIPTION, tests/mpitest.R, tests/mpitest.Rout.save,
+	  tests/simple.R, tests/simple.Rout.save: - better tests
+
+2011-08-27  kingaa
+
+	* [r80] inst/ChangeLog:
+	* [r79] DESCRIPTION:
+	* [r78] R/mpifarm.R: - bug fix
+
+2011-08-26  kingaa
+
+	* [r77] inst/ChangeLog:
+	* [r76] DESCRIPTION, R/mpifarm.R, inst/ChangeLog, man/mpifarm.Rd: -
+	  add new optional argument 'finished' to 'mpi.farm' that prepends
+	  partial results from checkpoint files to results from the current
+	  calculation
+
+2011-08-25  kingaa
+
+	* [r75] DESCRIPTION, inst/ChangeLog, inst/scripts/simple.R: - minor
+	  tweak to 'simple.R' script
+	* [r74] ., DESCRIPTION, NAMESPACE, R, inst, man, tests: - move all
+	  files from pkg/ to pkg/mpifarm
+

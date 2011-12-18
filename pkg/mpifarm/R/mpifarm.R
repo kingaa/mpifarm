@@ -25,18 +25,14 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
   ## each individual job.
   ## status codes:
   ##        0 = waiting incomplete,
-  ##        1 = running,
-  ##        2 = finished OK,
-  ##        4 = finished ERROR,
-  ##       -1 = undetermined
-  WAITING <- 0L
-  RUNNING <- 2L
+  ##        1 = finished OK,
+  ##        -1 = finished ERROR,
+  UNFINISHED <- 0L
   FINISHED <- 1L
   ERROR <- -1L
-  TMP <- 8L
 
   if (is.null(status)) {
-    status <- rep(WAITING,length(joblist))
+    status <- rep(UNFINISHED,length(joblist))
     names(status) <- names(joblist)
   } else if (length(status)!=length(joblist)) {
     stop(sQuote("joblist")," and ",sQuote("status")," must have the same length")
@@ -91,7 +87,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
     }
   }
 
-  todo <- which(status==WAITING)        # indices of unfinished jobs
+  todo <- which(status==UNFINISHED)        # indices of unfinished jobs
 
   if (ncpus > 1) {                       # RUN IN PARALLEL MODE
 
@@ -110,7 +106,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
     mpi.remote.exec(mpi.farm.slave,fn,common,verbose=verbose,ret=FALSE) # start up the slaves
 
     nslave <- ncpus-1
-    if (nslave > sum(status==WAITING)) {
+    if (nslave > sum(status==UNFINISHED)) {
       warning("mpi.farm warning: more slaves than jobs",call.=FALSE)  
     }
 
@@ -135,7 +131,6 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                        jobid <- todo[1]
                        mpi.send.Robj(joblist[jobid],dest=available[1],tag=3) 
                        sent <- sent+1
-                       status[jobid] <- RUNNING
                        todo <- todo[-1]
                        available <- available[-1]
                      }
@@ -149,7 +144,6 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                      tag <- srctag[2]   # were they succesful?
                      available <- c(available,src)
                      id <- which(names(joblist)==res$id)
-                     status[id] <- TMP
                      joblist[[id]] <- res$result
                      if (tag == 33) {                    # success
                        slaveinfo[1,src] <- slaveinfo[1,src]+1
@@ -165,7 +159,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                        if (stq) {       # should we stop?
                          status[id] <- FINISHED
                        } else {
-                         status[id] <- WAITING
+                         status[id] <- UNFINISHED
                          todo <- c(todo,id)
                        }
                      } else {           # an error occurred
@@ -180,8 +174,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                                      "writing checkpoint file",
                                      sQuote(checkpoint.file),
                                      "\n#finished =",sum(status==FINISHED),
-                                     "#waiting =",sum(status==WAITING),
-                                     "#running =",sum(status==RUNNING),
+                                     "#waiting =",sum(status==UNFINISHED),
                                      "#error =",sum(status==ERROR),
                                      "\n"
                                      )
@@ -192,7 +185,6 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                        jobid <- todo[1]
                        mpi.send.Robj(joblist[jobid],dest=available[1],tag=3) 
                        sent <- sent+1
-                       status[jobid] <- RUNNING
                        todo <- todo[-1]
                        available <- available[-1]
                      }
@@ -213,8 +205,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                      src <- srctag[1]   # who did it?
                      tag <- srctag[2]   # were they succesful?
                      available <- c(available,src)
-                     id <- res$id
-                     status[id] <- TMP
+                     id <- which(names(joblist)==res$id)
                      joblist[[id]] <- res$result
                      if (tag == 33) {                    # success
                        slaveinfo[1,src] <- slaveinfo[1,src]+1
@@ -230,7 +221,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                        if (stq) {       # should we stop?
                          status[id] <- FINISHED
                        } else {
-                         status[id] <- WAITING
+                         status[id] <- UNFINISHED
                          todo <- c(todo,id)
                        }
                      } else {           # an error occurred
@@ -239,6 +230,17 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                        else
                          warning('mpi.farm: slave ',format(src),' reports: ',res$result,call.=FALSE)
                        status[id] <- ERROR
+                     }
+                     if ((checkpointing)&&((rcvd%%checkpoint)==0)) {
+                       if (info) cat(
+                                     "writing checkpoint file",
+                                     sQuote(checkpoint.file),
+                                     "\n#finished =",sum(status==FINISHED),
+                                     "#waiting =",sum(status==UNFINISHED),
+                                     "#error =",sum(status==ERROR),
+                                     "\n"
+                                     )
+                       save(joblist,status,file=checkpoint.file)
                      }
                    }
                    for (d in live)
@@ -277,7 +279,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
       if (stq) {                        # should we stop?
         status[id] <- FINISHED
       } else {
-        status[id] <- WAITING
+        status[id] <- UNFINISHED
         todo <- c(todo,id)
       }
       if (inherits(res,"try-error")) {
