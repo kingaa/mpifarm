@@ -1,5 +1,5 @@
 
-R version 2.13.1 (2011-07-08)
+R version 2.14.0 (2011-10-31)
 Copyright (C) 2011 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 Platform: x86_64-unknown-linux-gnu (64-bit)
@@ -21,17 +21,17 @@ Loading required package: Rmpi
 > require(mpifarm)
 Loading required package: mpifarm
 > 
-> ncpus <- 10
+> ncpus <- 8
 > 
 > mpi.spawn.Rslaves(nslaves=ncpus,needlog=T)
-	10 slaves are spawned successfully. 0 failed.
-master  (rank 0 , comm 1) of size 11 is running on: nyx5000 
-slave1  (rank 1 , comm 1) of size 11 is running on: nyx5000 
-slave2  (rank 2 , comm 1) of size 11 is running on: nyx5000 
-slave3  (rank 3 , comm 1) of size 11 is running on: nyx5000 
+	8 slaves are spawned successfully. 0 failed.
+master (rank 0, comm 1) of size 9 is running on: eeb-tilia 
+slave1 (rank 1, comm 1) of size 9 is running on: eeb-tilia 
+slave2 (rank 2, comm 1) of size 9 is running on: eeb-tilia 
+slave3 (rank 3, comm 1) of size 9 is running on: eeb-tilia 
 ... ... ...
-slave9  (rank 9 , comm 1) of size 11 is running on: nyx5005 
-slave10 (rank 10, comm 1) of size 11 is running on: nyx5006 
+slave7 (rank 7, comm 1) of size 9 is running on: eeb-tilia 
+slave8 (rank 8, comm 1) of size 9 is running on: eeb-tilia 
 > 
 > set.seed(1066)
 > seeds <- ceiling(runif(n=ncpus,0,2^31))
@@ -47,46 +47,38 @@ slave10 (rank 10, comm 1) of size 11 is running on: nyx5006
 > 
 > y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+runif(1)},x,info=F)
 Warning messages:
-1: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+1: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
  
-2: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
+2: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
  
-3: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+3: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
  
-4: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+4: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
  
-5: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
+5: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
  
-6: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
- 
-7: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
- 
-8: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
+6: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
  
 > warnings()
 Warning messages:
-1: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+1: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
 
-2: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
+2: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
 
-3: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+3: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
 
-4: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+4: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
 
-5: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
+5: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
 
-6: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
-
-7: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
-
-8: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
+6: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
 
 > 
 > seeds <- as.integer(ceiling(runif(n=321,1,2^31)))
 > x <- lapply(1:321,function(k)list(a=k,b=10*k,seed=seeds[k]))
 > y1 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=x,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 > load("mpitest.rda")
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,status=status,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning messages:
 1: file 'mpitest.rda' exists, backup 'mpitest.rda.bak-1' created 
 2: mpi.farm warning: more slaves than jobs 
@@ -94,55 +86,51 @@ Warning messages:
 > y2 <- y2[order(names(y2))]
 > stopifnot(identical(y1,y2))
 > 
-> unfinished <- x
-> finished <- list()
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> joblist <- x
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning message:
 file 'mpitest.rda' exists, backup 'mpitest.rda.bak-2' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning message:
 file 'mpitest.rda' exists, backup 'mpitest.rda.bak-3' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning message:
 file 'mpitest.rda' exists, backup 'mpitest.rda.bak-4' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning message:
 file 'mpitest.rda' exists, backup 'mpitest.rda.bak-5' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning message:
 file 'mpitest.rda' exists, backup 'mpitest.rda.bak-6' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning message:
 file 'mpitest.rda' exists, backup 'mpitest.rda.bak-7' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning message:
 file 'mpitest.rda' exists, backup 'mpitest.rda.bak-8' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning message:
 file 'mpitest.rda' exists, backup 'mpitest.rda.bak-9' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning message:
 file 'mpitest.rda' exists, backup 'mpitest.rda.bak-10' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 Warning message:
 file 'mpitest.rda' exists, backup 'mpitest.rda.bak-11' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=unfinished,finished=finished,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-Warning message:
-file 'mpitest.rda' exists, backup 'mpitest.rda.bak-12' created 
 > 
 > x <- lapply(1:50,function(k)list(a=k,b=10*k,done=FALSE))
 > y <- mpi.farm(
 +               {
 +                list(a=a-1,b=b,m=mean(rnorm(n=b)),done=(a<=1))
 +                },
-+               x,
++               joblist=x,
 +               stop.condition=done,
 +               checkpoint.file="mpitest.rda",
 +               checkpoint=500,
 +               info=FALSE
 +               )
 Warning message:
-file 'mpitest.rda' exists, backup 'mpitest.rda.bak-13' created 
+file 'mpitest.rda' exists, backup 'mpitest.rda.bak-12' created 
 > 
 > seeds <- as.integer(ceiling(runif(n=100,1,2^31)))
 > x1 <- lapply(1:100,function(k)list(a=k,b=0,done=0,seed=seeds[k]))
@@ -165,23 +153,6 @@ file 'mpitest.rda' exists, backup 'mpitest.rda.bak-13' created
 > z1 <- unlist(mpi.farm({set.seed(seed); a+b},joblist=x2,info=F))
 > 
 > mpi.close.Rslaves()
---------------------------------------------------------------------------
-An MPI process has executed an operation involving a call to the
-"fork()" system call to create a child process.  Open MPI is currently
-operating in a condition that could result in memory corruption or
-other system errors; your MPI job may hang, crash, or produce silent
-data corruption.  The use of fork() (or system() or other calls that
-create child processes) is strongly discouraged.  
-
-The process that invoked fork was:
-
-  Local host:          nyx5000.engin.umich.edu (PID 4472)
-  MPI_COMM_WORLD rank: 0
-
-If you are *absolutely sure* that your application will successfully
-and correctly survive a call to fork(), you may disable this warning
-by setting the mpi_warn_on_fork MCA parameter to 0.
---------------------------------------------------------------------------
 [1] 1
 > 
 > y2 <- mpi.farm(

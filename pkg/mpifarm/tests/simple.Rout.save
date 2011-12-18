@@ -1,6 +1,6 @@
 
-R version 2.12.1 (2010-12-16)
-Copyright (C) 2010 The R Foundation for Statistical Computing
+R version 2.14.0 (2011-10-31)
+Copyright (C) 2011 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 Platform: x86_64-unknown-linux-gnu (64-bit)
 
@@ -20,16 +20,16 @@ Type 'q()' to quit R.
 Loading required package: Rmpi
 > require(mpifarm)
 Loading required package: mpifarm
-> nslave <- 10
+> nslave <- 8
 > mpi.spawn.Rslaves(nslaves=nslave,needlog=T)
-	10 slaves are spawned successfully. 0 failed.
-master  (rank 0 , comm 1) of size 11 is running on: nyx5000 
-slave1  (rank 1 , comm 1) of size 11 is running on: nyx5000 
-slave2  (rank 2 , comm 1) of size 11 is running on: nyx5000 
-slave3  (rank 3 , comm 1) of size 11 is running on: nyx5000 
+	8 slaves are spawned successfully. 0 failed.
+master (rank 0, comm 1) of size 9 is running on: eeb-tilia 
+slave1 (rank 1, comm 1) of size 9 is running on: eeb-tilia 
+slave2 (rank 2, comm 1) of size 9 is running on: eeb-tilia 
+slave3 (rank 3, comm 1) of size 9 is running on: eeb-tilia 
 ... ... ...
-slave9  (rank 9 , comm 1) of size 11 is running on: nyx5063 
-slave10 (rank 10, comm 1) of size 11 is running on: nyx5063 
+slave7 (rank 7, comm 1) of size 9 is running on: eeb-tilia 
+slave8 (rank 8, comm 1) of size 9 is running on: eeb-tilia 
 > nper <- 50
 > nrand <- 1000
 > njobs <- nper*nslave
@@ -54,7 +54,7 @@ slave10 (rank 10, comm 1) of size 11 is running on: nyx5063
 > toc <- Sys.time()
 > x <- do.call(rbind,job.result)
 > print(toc-tic)
-Time difference of 1.224121 secs
+Time difference of 0.5294836 secs
 > warnings()
 NULL
 > mpi.close.Rslaves()

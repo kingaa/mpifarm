@@ -1,12 +1,12 @@
 Package: mpifarm
 Type: Package
 Title: Farm out a sequence of jobs to a cluster of slaves using MPI.
-Version: 1.14-1
-Date: 2011-09-11
+Version: 1.15-1
+Date: 2011-12-18
 Author: Aaron A. King <kingaa@umich.edu>
 Maintainer: Aaron A. King <kingaa@umich.edu>
 Description: Parallel job-farming.
-Depends: R(>= 2.12.1)
+Depends: R(>= 2.13.1)
 Suggests: Rmpi, pomp, subplex
 License: GPL (>= 2)
 Collate: farm.R mpifarm.R mpifarmer.R partrans.R miffarm.R multistart.optim.R

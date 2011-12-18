@@ -17,28 +17,27 @@ mpi.farmer <- function (pre, main, post, common,
       stop("checkpoint load error")
   } else {
     cat("setting up\n")
-    unfinished <- try(eval(pre,envir=extras),silent=FALSE)
-    if (!is.list(unfinished))
+    joblist <- try(eval(pre,envir=extras),silent=FALSE)
+    if (!is.list(joblist))
       stop("when evaluated, ",sQuote("pre")," should return a list")
-    finished <- list()
-    if (inherits(unfinished,"try-error"))
-      stop("pre-processing error")
+    status <- rep(0L,length(joblist))
   }
 
   cat("running main computation\n")
-  cat(length(finished),"finished jobs,",length(unfinished),"unfinished jobs\n")
+  cat(sum(status==0),"unfinished jobs remaining\n")
+  
   results <- try(
                  eval(
                       bquote(
                              mpi.farm(
                                       proc=.(main),
                                       common=common,
-                                      joblist=unfinished,
-                                      finished=finished,
+                                      joblist=joblist,
+                                      status=status,
                                       checkpoint=checkpoint,
                                       checkpoint.file=checkpoint.file,
                                       stop.condition=stop.condition,
-                                      info=TRUE
+                                      info=info
                                       )
                              )
                       ),

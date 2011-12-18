@@ -6,7 +6,7 @@
   Farm out a procedure (an arbitrary block of R-code) to a cluster of slaves, with different values of the variables.
 }
 \usage{
-mpi.farm(proc, joblist, common = list(), finished = list(),
+mpi.farm(proc, joblist, common = list(), status = NULL, chunk = 1,
          stop.condition = TRUE, info = TRUE,
          checkpoint = NULL, checkpoint.file = NULL,
          max.backup = 20,
@@ -19,9 +19,12 @@ mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
     A list of named lists.
     Each element is a named list to be treated as an environment defining some or all of the variables in \code{proc}.}
   \item{common}{An optional list of variables common to all the jobs.}
-  \item{finished}{
-    An optional list of already-finished computations (e.g., from a checkpoint file).
-    This will be prepended to the results from the current computation.
+  \item{status}{
+    An optional integer vector giving the status of the individual jobs in \code{joblist}.
+    This will typically only arise when restarting from a checkpoint file.
+  }
+  \item{chunk}{
+    optional integer; the chunk size to be used.
   }
   \item{stop.condition}{
     This will be evaluated in the context of the return-value of \code{proc}.

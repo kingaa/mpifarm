@@ -1,4 +1,8 @@
 library(mpifarm)
+library(Rmpi)
+
+ncpu <- 8
+mpi.spawn.Rslaves(nslaves=ncpu)
 
 mpifarm:::mpi.farmer(
                      num=100,
@@ -18,7 +22,7 @@ mpifarm:::mpi.farmer(
                      },
                      common=list(q=11),
                      post={
-                       file.remove("farmer.rda")
+##                       file.remove("farmer.rda")
                        data.frame(
                                   s=sapply(results,function(x)x$s),
                                   x=sapply(results,function(x)x$x)
@@ -27,3 +31,8 @@ mpifarm:::mpi.farmer(
                      checkpoint.file="farmer.rda",
                      checkpoint=1
                      ) -> results
+
+mpi.close.Rslaves()
+mpi.exit()
+
+print(results)

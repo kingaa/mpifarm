@@ -1,6 +1,6 @@
 require(Rmpi)
 require(mpifarm)
-nslave <- 10
+nslave <- 8
 mpi.spawn.Rslaves(nslaves=nslave,needlog=T)
 nper <- 50
 nrand <- 1000
