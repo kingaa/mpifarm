@@ -1,5 +1,12 @@
 2011-12-19  kingaa
 
+	* [r100] tests/farmer.R, tests/farmer.Rout.save: - minor tweak to
+	  unit test
+	* [r99] R/farmer.R: - cosmetic change
+	* [r98] R/mpifarm.R: - names of 'joblist' must be unique
+	* [r97] tests/farmer.R, tests/farmer.Rout.save: - slight tweak to
+	  unit test
+	* [r96] inst/ChangeLog: - update ChangeLog
 	* [r95] DESCRIPTION, NAMESPACE, R/farm.R, R/farmer.R, R/mpifarm.R,
 	  R/mpifarmer.R, man/farmer.Rd, man/miffarm.Rd, man/mpifarm.Rd,
 	  man/multistart.optim.Rd, tests/farmer.R, tests/farmer.Rout.save:
