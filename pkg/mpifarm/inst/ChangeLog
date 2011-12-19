@@ -1,5 +1,19 @@
 2011-12-19  kingaa
 
+	* [r95] DESCRIPTION, NAMESPACE, R/farm.R, R/farmer.R, R/mpifarm.R,
+	  R/mpifarmer.R, man/farmer.Rd, man/miffarm.Rd, man/mpifarm.Rd,
+	  man/multistart.optim.Rd, tests/farmer.R, tests/farmer.Rout.save:
+	  - export 'mpi.farmer' and make this the main user-level routine
+	  - remove 'mif.farm' and 'multi.start.optim.farm' from export list
+	  - remove 'farm' entirely
+	  - change the handling of checkpoint arguments slightly
+	  - checkpointing is now done in serial mode
+	  - change the argument list for 'mpi.farmer'
+	  - 'post' is now an optional argument to 'mpi.farmer'
+	  - add documentation for 'mpi.farmer'
+	  - revisit documentation for 'mpi.farm'
+	  - add some unit tests
+	* [r94] inst/ChangeLog: - update ChangeLog
 	* [r93] DESCRIPTION, R/mpifarm.R, R/mpifarmer.R, inst/ChangeLog,
 	  tests/farmer.R, tests/farmer.Rout.save, tests/mpitest.R,
 	  tests/mpitest.Rout.save, tests/mstop.R, tests/mstop.Rout.save,
