@@ -1,7 +1,7 @@
 ### farm out a bunch of jobs in parallel if possible, run serially if not
 mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                       stop.condition = TRUE, info = TRUE,
-                      checkpoint = NULL, checkpoint.file = NULL,
+                      checkpoint = 0, checkpoint.file = NULL,
                       max.backup = 20,
                       verbose = getOption("verbose")) {
 
@@ -51,30 +51,26 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
   }
   
   checkpointing <- FALSE
-  if (is.null(checkpoint.file)) {       # no checkpointing
-    if (!is.null(checkpoint))
+  checkpoint <- as.integer(checkpoint)
+  if (checkpoint>0) {
+    if (is.null(checkpoint.file)) {
       stop("for checkpointing to work, ",sQuote("checkpoint.file")," must be set",call.=FALSE)
-  } else {                              # checkpointing
-    if (!is.character(checkpoint.file))
-      stop(sQuote("checkpoint.file")," must be a filename",call.=FALSE)
-    if (file.exists(checkpoint.file)) {
-      backup.file <- paste(checkpoint.file,"bak-%d",sep=".")
-      nbkups <- 1
-      while (file.exists(sprintf(backup.file,nbkups))&&(nbkups<=max.backup)) {
-        nbkups <- nbkups+1
-      }
-      if (nbkups<=max.backup)
-        backup.file <- sprintf(backup.file,nbkups)
-      else
-        stop("mpifarm error: ",max.backup," backup files already exist")
-      file.copy(from=checkpoint.file,to=backup.file)
-      warning("file ",sQuote(checkpoint.file)," exists, backup ",sQuote(backup.file)," created",call.=FALSE)
-    }
-    if ((is.null(checkpoint))||(checkpoint<0))
-      stop("for checkpointing to work, ",sQuote("checkpoint")," must be set to a positive integer",call.=FALSE)
-    checkpoint <- as.integer(checkpoint)
-    if (checkpoint>0) {
-      if (!file.exists(checkpoint.file)) {
+    } else {
+      if (!is.character(checkpoint.file))
+        stop(sQuote("checkpoint.file")," must be a filename",call.=FALSE)
+      if (file.exists(checkpoint.file)) {
+        backup.file <- paste(checkpoint.file,"bak-%d",sep=".")
+        nbkups <- 1
+        while (file.exists(sprintf(backup.file,nbkups))&&(nbkups<=max.backup)) {
+          nbkups <- nbkups+1
+        }
+        if (nbkups<=max.backup)
+          backup.file <- sprintf(backup.file,nbkups)
+        else
+          stop("mpifarm error: ",max.backup," backup files already exist")
+        file.copy(from=checkpoint.file,to=backup.file)
+        warning("file ",sQuote(checkpoint.file)," exists, backup ",sQuote(backup.file)," created",call.=FALSE)
+      } else {
         file.ok <- file.create(checkpoint.file)
         if (!file.ok) {
           stop(
@@ -285,6 +281,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
 
     if (!exists('.Random.seed')) runif(1)
 
+    count <- 0
     while (length(todo)>0) {
       id <- todo[1]
       todo <- todo[-1]
@@ -316,6 +313,18 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
         else
           warning("mpi.farm (serial) reports: ",res)
         status[id] <- ERROR
+      }
+      count <- count+1
+      if ((checkpointing)&&((count%%checkpoint)==0)) {
+        if (info) cat(
+                      "writing checkpoint file",
+                      sQuote(checkpoint.file),
+                      "\n#finished =",sum(status==FINISHED),
+                      "#waiting =",sum(status==UNFINISHED),
+                      "#error =",sum(status==ERROR),
+                      "\n"
+                      )
+        save(joblist,status,common,file=checkpoint.file)
       }
     }
   }

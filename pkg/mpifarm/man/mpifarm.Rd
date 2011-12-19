@@ -1,6 +1,7 @@
 \name{mpi.farm}
 \alias{mpi.farm}
 \alias{mpi.farm.slave}
+\keyword{internal}
 \title{Farm out jobs across a cluster using MPI}
 \description{
   Farm out a procedure (an arbitrary block of R-code) to a cluster of slaves, with different values of the variables.
@@ -8,41 +9,54 @@
 \usage{
 mpi.farm(proc, joblist, common = list(), status = NULL, chunk = 1,
          stop.condition = TRUE, info = TRUE,
-         checkpoint = NULL, checkpoint.file = NULL,
+         checkpoint = 0, checkpoint.file = NULL,
          max.backup = 20,
          verbose = getOption("verbose"))
 mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
 }
 \arguments{
-  \item{proc}{An arbitrary block of \R code}
+  \item{proc}{
+    An arbitrary block of \R code that will be executed for each element in \code{joblist}.
+    At each execution, this code will be evaluated in an environment consisting of the corresponding element of \code{joblist} plus the \code{common} list.
+    That is, when the \code{k}-th job is executed, the variables referred to in \code{proc} will be sought for in \code{joblist[[k]]} and, if they are not found there, in \code{common}.
+  }
   \item{joblist}{
-    A list of named lists.
-    Each element is a named list to be treated as an environment defining some or all of the variables in \code{proc}.}
-  \item{common}{An optional list of variables common to all the jobs.}
+    A list of the jobs that will be farmed out.
+    Each element of \code{joblist} should be a named list, defining some or all of the variables referred to by the code in \code{proc}.
+  }
+  \item{common}{
+    An optional list of variables common to all the jobs.
+  }
   \item{status}{
     An optional integer vector giving the status of the individual jobs in \code{joblist}.
     This will typically only arise when restarting from a checkpoint file.
   }
   \item{chunk}{
     optional integer; the chunk size to be used.
+    By default, \code{chunk=1} and each job in \code{joblist} is sent individually to a slave and returned when finished.
+    If \code{chunk>1}, chunks of this size are sent and processed sequentially.
+    In other words, \code{chunk} adjusts the granularity of the parallel computation.
   }
   \item{stop.condition}{
-    This will be evaluated in the context of the return-value of \code{proc}.
+    After each execution, this expression will be evaluated in the context of the return-value of \code{proc}.
     For this option to have an effect, \code{proc} must return a named list and \code{stop.condition} must evaluate to \code{TRUE} or \code{FALSE} in the context of that list.
-    If it evaluates to \code{FALSE}, the return-value of \code{proc} is appended to \code{joblist}.
+    If it evaluates to \code{FALSE}, the job is not finished; the return-value of \code{proc} will be appended to \code{joblist} for another round of processing.
+    If it evaluates to \code{TRUE}, the job is finished.
     This allows one to complete the calcuation in several steps, which in turn allows for more effective load-balancing.
     If the return-value of \code{proc} is not a list, this option has no effect.
   }
-  \item{info}{Print information on the progress of the slaves?}
+  \item{info}{
+    If \code{info=TRUE}, information on the progress of each slave will be printed.
+  }
   \item{checkpoint}{
     optional integer specifying the granularity of checkpointing.
     That is, the checkpoint file will be saved once every \code{checkpoint} jobs from joblist are completed.
+    If \code{checkpoint<1}, no checkpointing will be performed.
   }
   \item{checkpoint.file}{
     optional filename.
     If \code{checkpoint.file} is specified, then once every \code{checkpoint} jobs are finished, checkpoint information will be saved to a binary-format file with this name.
-    This file will contain two lists: \code{finished}, consisting of those jobs in \code{joblist} that are fully completed and
-    \code{unfinished}, consisting of that portion of \code{joblist} that has not yet been fully finished.
+    This file will contain the \code{joblist} and \code{common} lists (the former having been updated) and an integer vector \code{status}, which indicates the status of each element in \code{joblist}.
   }
   \item{max.backup}{
     positive integer; maximum number of backup checkpoint files that will be created.
@@ -53,13 +67,13 @@ mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
   \item{fn}{A arbitrary block of \R code, deparsed to a string.}
 }
 \details{
+  A higher-level code is \code{mpi.farmer}, which calls \code{mpi.farm} and handles checkpointing.
+  However, it may sometimes happen that a user wants to call \code{mpi.farm} directly.
+  \code{mpi.farm.slave} does the work on the slaves and should never need to be called by the user.
+  
   \code{mpi.farm} will execute the code in \code{proc} repeatedly in environments defined by the entries of \code{joblist} and the common environment \code{common}.
   If \pkg{Rmpi} slaves have been spawned, the jobs will be farmed out to them according to a load-balancing algorithm;
   if no slaves are running, or \pkg{Rmpi} has not been loaded, the jobs will be executed serially.
-
-  \code{mpi.farm.slave} does the work on the slaves and should never need to be called by the user.
-  This function is broadcast to the slaves, so that they will be able to do their part.
-  \code{mpi.farm} broadcasts the \code{mpi.farm.slave} to the slaves before beginning to assign jobs.
 
   For many of the applications envisioned, the jobs the slaves are assigned involve stochastic simulations.
   Because of the way that \R initializes its pseudorandom number generators (RNGs), it is easy to make the mistake of failing to initialize the RNGs on different slaves to different states.
@@ -78,10 +92,8 @@ mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
   The elements in the result correspond to the elements in the \code{joblist} argument;
   the list \code{finished} is prepended.
 }
+\seealso{mpi.farmer}
 \author{Aaron A. King}
-\note{
-  In serial mode, no checkpointing is done: the arguments pertaining to checkpointing are ignored.
-}
 \examples{
   \dontrun{
     mpi.spawn.Rslaves(needlog=F)

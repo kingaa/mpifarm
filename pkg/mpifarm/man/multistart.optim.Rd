@@ -1,5 +1,6 @@
 \name{multistart.optim.farm}
 \alias{multistart.optim.farm}
+\keyword{internal}
 \title{Manage a multistart/multistage optimization farm}
 \description{
   Farm out optimization jobs across a cluster.

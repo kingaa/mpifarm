@@ -3,6 +3,7 @@
 \alias{mif.farm.joblist}
 \alias{par.trans}
 \alias{par.untrans}
+\keyword{internal}
 \title{Manage a MIF farm}
 \description{
   Farm out iterated filtering jobs across a cluster.

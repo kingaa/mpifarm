@@ -9,4 +9,4 @@ Description: Parallel job-farming.
 Depends: R(>= 2.13.1)
 Suggests: Rmpi, pomp, subplex
 License: GPL (>= 2)
-Collate: farm.R mpifarm.R mpifarmer.R partrans.R miffarm.R multistart.optim.R
+Collate: mpifarm.R farmer.R partrans.R miffarm.R multistart.optim.R
