@@ -23,7 +23,9 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
     stop("joblist must be a list")
   if (is.null(names(joblist)))
     names(joblist) <- as.character(seq_along(joblist))
-
+  else
+    names(joblist) <- make.unique(names(joblist))
+  
   ## 'status' is an integer holding the status codes for 
   ## each individual job.
   ## status codes:
