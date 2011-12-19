@@ -1,3 +1,15 @@
+2011-12-19  kingaa
+
+	* [r93] DESCRIPTION, R/mpifarm.R, R/mpifarmer.R, inst/ChangeLog,
+	  tests/farmer.R, tests/farmer.Rout.save, tests/mpitest.R,
+	  tests/mpitest.Rout.save, tests/mstop.R, tests/mstop.Rout.save,
+	  tests/simple.Rout.save: - chunking support in 'mpi.farm': users
+	  can adjust the granularity of the mpi farming
+	  - in 'mpi.farmer', 'common' is now evaluated in the same
+	  environment as 'pre'
+	  - fix bug to do with chunking, introduced in the last revision
+	  - more unit tests
+
 2011-12-18  kingaa
 
 	* [r92] R/mpifarm.R, inst/ChangeLog: - fix some bugs to do with
