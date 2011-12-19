@@ -55,7 +55,7 @@ slave8 (rank 8, comm 1) of size 9 is running on: eeb-tilia
 +                         x=sapply(results,function(x)x$x)
 +                         )
 +            },
-+            checkpoint.file="farmer.rda",
++            checkpoint.file="farmer1.rda",
 +            checkpoint=1,
 +            info=FALSE
 +            ) -> results
@@ -166,8 +166,6 @@ main computation finished, post-processing
 98  109 110.62381
 99  110 111.02359
 100 111 110.46856
-> file.remove("farmer.rda")
-[1] TRUE
 > 
 > mpi.farmer(
 +            num=100,
@@ -196,7 +194,7 @@ main computation finished, post-processing
 +                         x=sapply(results,function(x)x$x)
 +                         )
 +            },
-+            checkpoint.file="farmer.rda",
++            checkpoint.file="farmer2.rda",
 +            checkpoint=1,
 +            info=FALSE
 +            ) -> results2

@@ -29,13 +29,12 @@ mpi.farmer(
                         x=sapply(results,function(x)x$x)
                         )
            },
-           checkpoint.file="farmer.rda",
+           checkpoint.file="farmer1.rda",
            checkpoint=1,
            info=FALSE
            ) -> results
 
 print(results)
-file.remove("farmer.rda")
 
 mpi.farmer(
            num=100,
@@ -64,7 +63,7 @@ mpi.farmer(
                         x=sapply(results,function(x)x$x)
                         )
            },
-           checkpoint.file="farmer.rda",
+           checkpoint.file="farmer2.rda",
            checkpoint=1,
            info=FALSE
            ) -> results2
