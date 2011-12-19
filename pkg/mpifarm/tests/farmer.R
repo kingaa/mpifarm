@@ -24,7 +24,6 @@ mpi.farmer(
              list(s=a+q,x=x)
            },
            post={
-             file.remove("farmer.rda")
              data.frame(
                         s=sapply(results,function(x)x$s),
                         x=sapply(results,function(x)x$x)
@@ -36,6 +35,7 @@ mpi.farmer(
            ) -> results
 
 print(results)
+file.remove("farmer.rda")
 
 mpi.farmer(
            num=100,
@@ -59,7 +59,6 @@ mpi.farmer(
              list(s=a+q,x=x)
            },
            post={
-             file.remove("farmer.rda")
              data.frame(
                         s=sapply(results,function(x)x$s),
                         x=sapply(results,function(x)x$x)
