@@ -18,7 +18,7 @@ mpi.farmer <- function (..., jobs, common, main, post, chunk = 1,
     stop("for checkpointing to work, ",sQuote("checkpoint")," must be a positive integer")
   if (checkpointing && file.exists(checkpoint.file)) {
     cat("loading checkpoint file",sQuote(checkpoint.file),"\n")
-    cat(sQuote("jobs")," and ",sQuote("common")," will not be evaluated")
+    cat(sQuote("jobs")," and ",sQuote("common")," will not be evaluated\n")
     olist <- try(load(checkpoint.file))
     if (inherits(olist,"try-error"))
       stop("checkpoint load error")
