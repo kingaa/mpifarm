@@ -54,7 +54,7 @@ slave8 (rank 8, comm 1) of size 9 is running on: eeb-tilia
 > toc <- Sys.time()
 > x <- do.call(rbind,job.result)
 > print(toc-tic)
-Time difference of 0.5294836 secs
+Time difference of 0.5272636 secs
 > warnings()
 NULL
 > mpi.close.Rslaves()

@@ -1,11 +1,15 @@
-mpi.farmer <- function (pre, main, post, common,
+mpi.farmer <- function (pre, main, post, common, chunk = 1,
                         checkpoint.file = NULL, checkpoint = 0,
-                        stop.condition=TRUE, info = TRUE,
+                        stop.condition = TRUE, info = TRUE,
+                        verbose = getOption("verbose"),
                         ...) {
+
   pre <- substitute(pre)
   main <- substitute(main)
   post <- substitute(post)
-
+  common <- substitute(common)
+  stop.condition <- substitute(stop.condition)
+  
   extras <- list(...)
 
   checkpoint <- as.integer(checkpoint)
@@ -21,6 +25,9 @@ mpi.farmer <- function (pre, main, post, common,
     if (!is.list(joblist))
       stop("when evaluated, ",sQuote("pre")," should return a list")
     status <- rep(0L,length(joblist))
+    common <- try(eval(common,envir=extras),silent=FALSE)
+    if (!is.list(common))
+      stop("when evaluated, ",sQuote("common")," should return a list")
   }
 
   cat("running main computation\n")
@@ -36,8 +43,10 @@ mpi.farmer <- function (pre, main, post, common,
                                       status=status,
                                       checkpoint=checkpoint,
                                       checkpoint.file=checkpoint.file,
-                                      stop.condition=stop.condition,
-                                      info=info
+                                      stop.condition=.(stop.condition),
+                                      chunk=chunk,
+                                      info=info,
+                                      verbose=verbose
                                       )
                              )
                       ),

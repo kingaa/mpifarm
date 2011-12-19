@@ -12,10 +12,13 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
   chunk <- as.integer(chunk)
   if ((chunk<1)||(length(chunk)>1))
     stop(sQuote("chunk")," must be a single positive integer")
+  chnk <- seq_len(chunk)
 
   max.backup <- as.integer(max.backup)
   if (max.backup < 1) stop(sQuote("max.backup")," must be a positive integer")
 
+  stop.condn <- substitute(stop.condition) # the stop condition
+  
   if (!is.list(joblist))
     stop("joblist must be a list")
   if (is.null(names(joblist)))
@@ -24,9 +27,9 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
   ## 'status' is an integer holding the status codes for 
   ## each individual job.
   ## status codes:
-  ##        0 = waiting incomplete,
-  ##        1 = finished OK,
-  ##        -1 = finished ERROR,
+  ##  0 = waiting incomplete,
+  ##  1 = finished OK,
+  ## -1 = finished ERROR,
   UNFINISHED <- 0L
   FINISHED <- 1L
   ERROR <- -1L
@@ -92,7 +95,6 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
   if (ncpus > 1) {                       # RUN IN PARALLEL MODE
 
     fn <- deparse(substitute(proc))      # deparse the procedure to text
-    stop.condn <- deparse(substitute(stop.condition)) # deparse the stop condition
 
     if (verbose)
       cat("broadcasting ",sQuote("mpi.farm.slave")," function to slaves\n")
@@ -128,10 +130,14 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                    for (d in live) { # initialize the queue
                      if (length(todo)>0) {      # farm out the work
                        ## pop the next job off the stack and send it out
-                       jobid <- todo[1]
+                       if (length(todo)>chunk) {
+                         jobid <- todo[chnk]
+                       } else {
+                         jobid <- todo
+                       }
                        mpi.send.Robj(joblist[jobid],dest=available[1],tag=3) 
                        sent <- sent+1
-                       todo <- todo[-1]
+                       todo <- todo[-chnk]
                        available <- available[-1]
                      }
                    }
@@ -143,31 +149,35 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                      src <- srctag[1]   # who did it?
                      tag <- srctag[2]   # were they succesful?
                      available <- c(available,src)
-                     id <- which(names(joblist)==res$id)
-                     joblist[[id]] <- res$result
-                     if (tag == 33) {                    # success
-                       slaveinfo[1,src] <- slaveinfo[1,src]+1
-                       slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1]+1
-                       if (info) print(slaveinfo)
-                       if (is.list(res$result)) {         # are we all finished with this job?
-                         stq <- as.logical(eval(parse(text=stop.condn),envir=res$result))
-                         if (is.na(stq))
-                           stop(sQuote("stop.condition")," must evaluate to TRUE or FALSE")
+                     for (id in names(res)) {
+                       joblist[[id]] <- res[[id]]
+                       if (inherits(res[[id]],"try-error")) {
+                         status[id] <- ERROR
+                         if (info)
+                           message('slave ',format(src),' reports: ',res[[id]])
+                         else
+                           warning('mpi.farm: slave ',format(src),' reports: ',res[[id]],call.=FALSE)
                        } else {
-                         stq <- TRUE
+                         slaveinfo[1,src] <- slaveinfo[1,src]+1
+                         slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1]+1
+                         if (is.list(res[[id]])) {         # are we all finished with this job?
+                           stq <- eval(
+                                       stop.condn,
+                                       envir=res[[id]],
+                                       enclos=NULL
+                                       )
+                           if (!is.logical(stq)||is.na(stq))
+                             stop(sQuote("stop.condition")," must evaluate to TRUE or FALSE")
+                         } else {
+                           stq <- TRUE
+                         }
+                         if (stq) {       # should we stop?
+                           status[id] <- FINISHED
+                         } else {
+                           status[id] <- UNFINISHED
+                           todo <- c(todo,which(names(joblist)==id))
+                         }
                        }
-                       if (stq) {       # should we stop?
-                         status[id] <- FINISHED
-                       } else {
-                         status[id] <- UNFINISHED
-                         todo <- c(todo,id)
-                       }
-                     } else {           # an error occurred
-                       if (info)
-                         message('slave ',format(src),' reports: ',res$result)
-                       else
-                         warning('mpi.farm: slave ',format(src),' reports: ',res$result,call.=FALSE)
-                       status[id] <- ERROR
                      }
                      if ((checkpointing)&&((rcvd%%checkpoint)==0)) {
                        if (info) cat(
@@ -178,14 +188,19 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                                      "#error =",sum(status==ERROR),
                                      "\n"
                                      )
-                       save(joblist,status,file=checkpoint.file)
+                       save(joblist,status,common,file=checkpoint.file)
                      }
+                     if (info) print(slaveinfo)
                      if (length(todo)>0) {       # is there more to do?
                        ## pop the next job off the stack and send it out
-                       jobid <- todo[1]
+                       if (length(todo)>chunk) {
+                         jobid <- todo[chnk]
+                       } else {
+                         jobid <- todo
+                       }
                        mpi.send.Robj(joblist[jobid],dest=available[1],tag=3) 
                        sent <- sent+1
-                       todo <- todo[-1]
+                       todo <- todo[-chnk]
                        available <- available[-1]
                      }
                    }
@@ -199,37 +214,42 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                  },
                  cleanup=function(){
                    while (rcvd < sent) {
+                     ## wait for someone to finish
                      res <- mpi.recv.Robj(source=mpi.any.source(),tag=mpi.any.tag()) 
                      rcvd <- rcvd+1
                      srctag <- mpi.get.sourcetag()
                      src <- srctag[1]   # who did it?
                      tag <- srctag[2]   # were they succesful?
                      available <- c(available,src)
-                     id <- which(names(joblist)==res$id)
-                     joblist[[id]] <- res$result
-                     if (tag == 33) {                    # success
-                       slaveinfo[1,src] <- slaveinfo[1,src]+1
-                       slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1]+1
-                       if (info) print(slaveinfo)
-                       if (is.list(res$result)) {         # are we all finished with this job?
-                         stq <- as.logical(eval(parse(text=stop.condn),envir=res$result))
-                         if (is.na(stq))
-                           stop(sQuote("stop.condition")," must evaluate to TRUE or FALSE")
+                     for (id in names(res)) {
+                       joblist[[id]] <- res[[id]]
+                       if (inherits(res[[id]],"try-error")) {
+                         status[id] <- ERROR
+                         if (info)
+                           message('slave ',format(src),' reports: ',res[[id]])
+                         else
+                           warning('mpi.farm: slave ',format(src),' reports: ',res[[id]],call.=FALSE)
                        } else {
-                         stq <- TRUE
+                         slaveinfo[1,src] <- slaveinfo[1,src]+1
+                         slaveinfo[1,nslave+1] <- slaveinfo[1,nslave+1]+1
+                         if (is.list(res[[id]])) {         # are we all finished with this job?
+                           stq <- eval(
+                                       stop.condn,
+                                       envir=res[[id]],
+                                       enclos=NULL
+                                       )
+                           if (!is.logical(stq)||is.na(stq))
+                             stop(sQuote("stop.condition")," must evaluate to TRUE or FALSE")
+                         } else {
+                           stq <- TRUE
+                         }
+                         if (stq) {       # should we stop?
+                           status[id] <- FINISHED
+                         } else {
+                           status[id] <- UNFINISHED
+                           todo <- c(todo,which(names(joblist)==id))
+                         }
                        }
-                       if (stq) {       # should we stop?
-                         status[id] <- FINISHED
-                       } else {
-                         status[id] <- UNFINISHED
-                         todo <- c(todo,id)
-                       }
-                     } else {           # an error occurred
-                       if (info)
-                         message('slave ',format(src),' reports: ',res$result)
-                       else
-                         warning('mpi.farm: slave ',format(src),' reports: ',res$result,call.=FALSE)
-                       status[id] <- ERROR
                      }
                      if ((checkpointing)&&((rcvd%%checkpoint)==0)) {
                        if (info) cat(
@@ -240,11 +260,13 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                                      "#error =",sum(status==ERROR),
                                      "\n"
                                      )
-                       save(joblist,status,file=checkpoint.file)
+                       save(joblist,status,common,file=checkpoint.file)
                      }
+                     if (info) print(slaveinfo)
                    }
-                   for (d in live)
+                   for (d in live) {    # kill off slaves
                      mpi.send.Robj(0,dest=d,tag=666)
+                   }
                    cat("mpi.farm aborted cleanly\n")
                  },
                  abort=function(){
@@ -256,8 +278,10 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                  )
   } else {                 # RUN IN SERIAL MODE
 
+    if (chunk > 1)
+      warning("in serial mode, ",sQuote("chunk")," is ignored")
+
     fn <- substitute(proc)
-    stop.condn <- substitute(stop.condition)
 
     if (!exists('.Random.seed')) runif(1)
 
@@ -269,8 +293,12 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                  silent=TRUE
                  )
       if (is.list(res)) {         # are we all finished with this job?
-        stq <- as.logical(eval(stop.condn,envir=res))
-        if (is.na(stq))
+        stq <- eval(
+                    stop.condn,
+                    envir=res,
+                    enclos=NULL
+                    )
+        if (!is.logical(stq)||is.na(stq))
           stop(sQuote("stop.condition")," must evaluate to TRUE or FALSE")
       } else {
         stq <- TRUE
@@ -292,7 +320,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
     }
   }
   if (checkpointing) {
-    save(joblist,status,file=checkpoint.file)
+    save(joblist,status,common,file=checkpoint.file)
   }
   joblist
 }
@@ -306,23 +334,20 @@ mpi.farm.slave <- function (fn, common = list(), verbose = getOption("verbose"))
     if (verbose)
       cat("slave",me,"awaiting instructions\n")
     rcv <- mpi.recv.Robj(source=0,tag=mpi.any.tag())
-    identifier <- names(rcv)
     srctag <- mpi.get.sourcetag()
     if (srctag[2] == 3) {               # we have a job to do
       if (verbose)
-        cat("slave",me,"getting to work\n")
-      tic <- Sys.time()
-      result <- try(
-                    evalq(eval(proc,envir=rcv[[1]]),envir=common),
-                    silent=FALSE
-                    )
-      toc <- Sys.time()
-      if (inherits(result,'try-error')) {
-        tag <- 66                       # error
-      } else {
-        tag <- 33                       # success
+        cat("slave",me,"getting to work on a chunk of size",length(rcv),"\n")
+      snd <- vector(mode="list",length=length(rcv))
+      names(snd) <- names(rcv)
+      for (ct in seq_len(length(rcv))) {
+        result <- try(
+                      evalq(eval(proc,envir=rcv[[ct]]),envir=common),
+                      silent=FALSE
+                      )
+        snd[[ct]] <- result
       }
-      snd <- list(id=identifier,result=result,etime=toc-tic)
+      tag <- 33
       if (verbose)
         cat("slave",me,"sending results\n")
       mpi.send.Robj(snd,dest=0,tag=tag)

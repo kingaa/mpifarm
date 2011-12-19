@@ -5,8 +5,9 @@ ncpus <- 8
 
 mpi.spawn.Rslaves(nslaves=ncpus,needlog=T)
 
-set.seed(1066)
-seeds <- ceiling(runif(n=ncpus,0,2^31))
+set.seed(1066L)
+seeds <- as.integer(ceiling(runif(n=ncpus,0,2^31)))
+
 x <- mpi.farm({set.seed(seed)},joblist=lapply(seeds,function(x)list(seed=x)),info=F)
 
 x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
@@ -14,7 +15,6 @@ y <- mpi.farm(a+b,x,info=F)
 
 x <- lapply(1:100,function(k)list(a=k))
 y <- mpi.farm({for (j in 1:10000) j <- j+1; a},x,info=F)
-y <- y[order(as.numeric(names(y)))]
 stopifnot(sum(diff(as.numeric(y))!=1)==0)
 
 y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+runif(1)},x,info=F)
@@ -25,8 +25,6 @@ x <- lapply(1:321,function(k)list(a=k,b=10*k,seed=seeds[k]))
 y1 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=x,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 load("mpitest.rda")
 y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,status=status,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-y1 <- y1[order(names(y1))]
-y2 <- y2[order(names(y2))]
 stopifnot(identical(y1,y2))
 
 joblist <- x
@@ -40,6 +38,10 @@ y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.f
 y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
+
+y3 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,chunk=5,info=F,checkpoint=23,checkpoint.file="mpitest2.rda")
+y3 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,chunk=5,info=F,checkpoint=23,checkpoint.file="mpitest2.rda")
+stopifnot(identical(y2,y3))
 
 x <- lapply(1:50,function(k)list(a=k,b=10*k,done=FALSE))
 y <- mpi.farm(
@@ -92,11 +94,8 @@ y2 <- mpi.farm(
 
 z2 <- unlist(mpi.farm({set.seed(seed); a+b},joblist=x2,info=F))
 
-y1 <- y1[order(as.numeric(names(y1)))]
-y2 <- y2[order(as.numeric(names(y2)))]
 stopifnot(identical(y1,y2))
 
-z1 <- z1[order(as.numeric(names(z1)))]
 stopifnot(identical(z1,z2))
 
 mpi.exit()

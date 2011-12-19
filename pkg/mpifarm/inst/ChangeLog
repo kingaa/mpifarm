@@ -1,5 +1,7 @@
 2011-12-18  kingaa
 
+	* [r92] R/mpifarm.R, inst/ChangeLog: - fix some bugs to do with
+	  interrupt recovery
 	* [r91] DESCRIPTION, R/mpifarm.R, R/mpifarmer.R, man/mpifarm.Rd,
 	  tests/farmer.R, tests/mpitest.R, tests/mpitest.Rout.save,
 	  tests/simple.R, tests/simple.Rout.save: - internal changes to the

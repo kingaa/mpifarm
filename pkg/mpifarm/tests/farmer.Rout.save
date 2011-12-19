@@ -1,0 +1,215 @@
+
+R version 2.14.0 (2011-10-31)
+Copyright (C) 2011 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(mpifarm)
+> library(Rmpi)
+> 
+> ncpu <- 8
+> mpi.spawn.Rslaves(nslaves=ncpu)
+	8 slaves are spawned successfully. 0 failed.
+master (rank 0, comm 1) of size 9 is running on: eeb-tilia 
+slave1 (rank 1, comm 1) of size 9 is running on: eeb-tilia 
+slave2 (rank 2, comm 1) of size 9 is running on: eeb-tilia 
+slave3 (rank 3, comm 1) of size 9 is running on: eeb-tilia 
+... ... ...
+slave7 (rank 7, comm 1) of size 9 is running on: eeb-tilia 
+slave8 (rank 8, comm 1) of size 9 is running on: eeb-tilia 
+> 
+> mpifarm:::mpi.farmer(
++                      num=100,
++                      bigseed=343435L,
++                      pre={
++                        set.seed(bigseed)
++                        seeds <- as.integer(ceiling(runif(n=num,min=0,max=2^31-1)))
++                        joblist <- list()
++                        for (k in seq_along(seeds))
++                          joblist[[k]] <- list(seed=seeds[k],a=k)
++                        joblist
++                      },
++                      main={
++                        save.seed <- .Random.seed
++                        set.seed(seed)
++                        x <- rnorm(n=1,mean=a+q)
++                        .Random.seed <<- save.seed
++                        list(s=a+q,x=x)
++                      },
++                      common=list(q=11),
++                      post={
++                        file.remove("farmer.rda")
++                        data.frame(
++                                   s=sapply(results,function(x)x$s),
++                                   x=sapply(results,function(x)x$x)
++                                   )
++                      },
++                      checkpoint.file="farmer.rda",
++                      checkpoint=1,
++                      info=FALSE
++                      ) -> results
+setting up
+running main computation
+100 unfinished jobs remaining
+main computation finished, post-processing
+> 
+> print(results)
+      s         x
+1    12  11.36940
+2    13  13.32720
+3    14  13.50045
+4    15  14.86873
+5    16  14.24540
+6    17  18.18601
+7    18  16.68400
+8    19  19.85240
+9    20  20.82001
+10   21  20.65465
+11   22  22.18901
+12   23  22.27354
+13   24  24.35622
+14   25  26.47828
+15   26  27.05814
+16   27  27.77987
+17   28  28.19896
+18   29  28.21320
+19   30  29.01302
+20   31  30.59676
+21   32  34.44107
+22   33  33.31828
+23   34  35.25701
+24   35  35.00462
+25   36  37.00424
+26   37  34.56158
+27   38  39.13611
+28   39  38.14952
+29   40  39.54941
+30   41  43.37667
+31   42  40.89613
+32   43  44.18999
+33   44  45.27838
+34   45  44.63305
+35   46  46.36190
+36   47  48.05265
+37   48  48.15328
+38   49  50.05724
+39   50  49.32695
+40   51  51.77924
+41   52  50.41760
+42   53  53.83305
+43   54  55.34816
+44   55  55.61972
+45   56  54.68426
+46   57  56.40127
+47   58  58.06229
+48   59  58.74327
+49   60  60.50905
+50   61  61.80553
+51   62  61.67393
+52   63  62.56416
+53   64  62.85221
+54   65  64.17282
+55   66  67.07060
+56   67  68.51478
+57   68  66.43748
+58   69  70.37490
+59   70  69.91802
+60   71  72.33634
+61   72  71.10905
+62   73  71.89872
+63   74  73.74202
+64   75  74.56401
+65   76  75.48386
+66   77  78.81866
+67   78  79.87190
+68   79  80.13846
+69   80  79.25055
+70   81  83.79345
+71   82  83.32442
+72   83  84.09876
+73   84  82.19925
+74   85  85.54978
+75   86  86.90511
+76   87  87.72978
+77   88  88.26564
+78   89  87.72621
+79   90  90.43456
+80   91  91.97421
+81   92  91.87367
+82   93  94.12149
+83   94  93.98443
+84   95  94.99728
+85   96  95.15903
+86   97  95.04334
+87   98  98.12203
+88   99  99.03455
+89  100  99.65183
+90  101 102.03005
+91  102 101.97287
+92  103 103.21541
+93  104 102.83866
+94  105 104.30910
+95  106 106.46476
+96  107 107.46135
+97  108 106.56953
+98  109 110.62381
+99  110 111.02359
+100 111 110.46856
+> 
+> mpifarm:::mpi.farmer(
++                      num=100,
++                      chunk=5,
++                      bigseed=343435L,
++                      pre={
++                        set.seed(bigseed)
++                        seeds <- as.integer(ceiling(runif(n=num,min=0,max=2^31-1)))
++                        joblist <- list()
++                        for (k in seq_along(seeds))
++                          joblist[[k]] <- list(seed=seeds[k],a=k)
++                        joblist
++                      },
++                      main={
++                        save.seed <- .Random.seed
++                        print(c(seed,a,q))
++                        set.seed(seed)
++                        x <- rnorm(n=1,mean=a+q)
++                        .Random.seed <<- save.seed
++                        list(s=a+q,x=x)
++                      },
++                      common=list(q=11),
++                      post={
++                        file.remove("farmer.rda")
++                        data.frame(
++                                   s=sapply(results,function(x)x$s),
++                                   x=sapply(results,function(x)x$x)
++                                   )
++                      },
++                      checkpoint.file="farmer.rda",
++                      checkpoint=1,
++                      info=FALSE
++                      ) -> results2
+setting up
+running main computation
+100 unfinished jobs remaining
+main computation finished, post-processing
+> 
+> stopifnot(identical(results,results2))
+> 
+> mpi.close.Rslaves()
+[1] 1
+> mpi.exit()
+[1] "Detaching Rmpi. Rmpi cannot be used unless relaunching R."
+> 
+> 

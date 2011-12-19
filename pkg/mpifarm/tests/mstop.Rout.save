@@ -1,0 +1,90 @@
+
+R version 2.14.0 (2011-10-31)
+Copyright (C) 2011 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> require(Rmpi)
+Loading required package: Rmpi
+> require(mpifarm)
+Loading required package: mpifarm
+> 
+> ncpus <- 6
+> 
+> mpi.spawn.Rslaves(nslaves=ncpus,needlog=T)
+	6 slaves are spawned successfully. 0 failed.
+master (rank 0, comm 1) of size 7 is running on: eeb-tilia 
+slave1 (rank 1, comm 1) of size 7 is running on: eeb-tilia 
+slave2 (rank 2, comm 1) of size 7 is running on: eeb-tilia 
+slave3 (rank 3, comm 1) of size 7 is running on: eeb-tilia 
+slave4 (rank 4, comm 1) of size 7 is running on: eeb-tilia 
+slave5 (rank 5, comm 1) of size 7 is running on: eeb-tilia 
+slave6 (rank 6, comm 1) of size 7 is running on: eeb-tilia 
+> 
+> njobs <- 200
+> 
+> set.seed(34588366L)
+> seeds <- as.integer(ceiling(runif(n=njobs,min=0,max=2^31-1)))
+> x <- list()
+> save.seed <- .Random.seed
+> for (i in seq_along(seeds)) {
++   set.seed(seeds[i])
++   x[[i]] <- list(rng.state=.Random.seed)
++ }
+> .Random.seed <<- save.seed
+> 
+> y1 <- mpi.farm(
++                {
++                  save.seed <- .Random.seed
++                  .Random.seed <<- rng.state
++                  b <- rnorm(1)
++                  rng.state <- .Random.seed
++                  .Random.seed <<- save.seed
++                  list(
++                       rng.state=rng.state,
++                       b=b
++                       )
++                },
++                joblist=x,
++                stop.condition=b>0,
++                info=FALSE
++                )
+> 
+> y2 <- mpi.farm(
++                {
++                  save.seed <- .Random.seed
++                  .Random.seed <<- rng.state
++                  b <- rnorm(1)
++                  rng.state <- .Random.seed
++                  .Random.seed <<- save.seed
++                  list(
++                       rng.state=rng.state,
++                       b=b
++                       )
++                },
++                joblist=x,
++                stop.condition=b>0,
++                chunk=8,
++                info=FALSE
++                )
+> 
+> stopifnot(identical(y1,y2))
+> 
+> mpi.close.Rslaves()
+[1] 1
+> mpi.exit()
+[1] "Detaching Rmpi. Rmpi cannot be used unless relaunching R."
+> 
+> 
