@@ -47,7 +47,7 @@ mpi.farmer(\dots, jobs, common, main, post,
   }
   \item{blocking}{
     If TRUE, blocking MPI calls will be used, altering the job scheduling system.
-    The default is to use non-blocking MPI calls for greater evenness and efficiency.
+    If FALSE non-blocking MPI calls are used for greater evenness and efficiency.
   }
   \item{stop.condition}{
     After each execution, this expression will be evaluated in the context of the return-value of \code{proc}.

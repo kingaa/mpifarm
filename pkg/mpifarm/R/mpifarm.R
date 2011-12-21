@@ -2,7 +2,7 @@
 mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                       stop.condition = TRUE, info = TRUE,
                       checkpoint = 0, checkpoint.file = NULL,
-                      max.backup = 20, sleep = 0.01, blocking = FALSE,
+                      max.backup = 20, sleep = 0.01, blocking = TRUE,
                       verbose = getOption("verbose")) {
 
   ncpus <- try(mpi.comm.size(),silent=TRUE)

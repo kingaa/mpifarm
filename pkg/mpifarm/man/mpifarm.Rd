@@ -66,7 +66,7 @@ mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
   }
   \item{blocking}{
     If TRUE, blocking MPI calls will be used, altering the job scheduling system.
-    The default is to use non-blocking MPI calls for greater evenness and efficiency.
+    If FALSE non-blocking MPI calls are used for greater evenness and efficiency.
   }
   \item{verbose}{
     logical; if \code{TRUE}, information will be printed both by the master and the slaves.
