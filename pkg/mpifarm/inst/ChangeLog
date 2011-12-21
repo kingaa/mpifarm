@@ -1,5 +1,10 @@
+2011-12-20  kingaa
+
+	* [r102] R/mpifarm.R: - cosmetic changes to the code
+
 2011-12-19  kingaa
 
+	* [r101] inst/ChangeLog: - update ChangeLog
 	* [r100] tests/farmer.R, tests/farmer.Rout.save: - minor tweak to
 	  unit test
 	* [r99] R/farmer.R: - cosmetic change

@@ -10,7 +10,7 @@
 mpi.farm(proc, joblist, common = list(), status = NULL, chunk = 1,
          stop.condition = TRUE, info = TRUE,
          checkpoint = 0, checkpoint.file = NULL,
-         max.backup = 20,
+         max.backup = 20, sleep = 0.01, blocking = FALSE,
          verbose = getOption("verbose"))
 mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
 }
@@ -60,6 +60,13 @@ mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
   }
   \item{max.backup}{
     positive integer; maximum number of backup checkpoint files that will be created.
+  }
+  \item{sleep}{
+    amount of time (in seconds) that the master will sleep between consecutive polls of the slave pool.
+  }
+  \item{blocking}{
+    If TRUE, blocking MPI calls will be used, altering the job scheduling system.
+    The default is to use non-blocking MPI calls for greater evenness and efficiency.
   }
   \item{verbose}{
     logical; if \code{TRUE}, information will be printed both by the master and the slaves.

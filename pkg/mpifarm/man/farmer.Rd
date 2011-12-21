@@ -5,7 +5,8 @@
   Farm out a procedure (an arbitrary block of R-code) to a cluster of slaves, with different values of the variables.
 }
 \usage{
-mpi.farmer(\dots, jobs, common, main, post, chunk = 1,
+mpi.farmer(\dots, jobs, common, main, post,
+           chunk = 1, blocking = FALSE,
            checkpoint.file = NULL, checkpoint = 0,
            max.backup = 20,
            stop.condition = TRUE, info = TRUE,
@@ -43,6 +44,10 @@ mpi.farmer(\dots, jobs, common, main, post, chunk = 1,
     By default, \code{chunk=1} and each job in \code{joblist} is sent individually to a slave and returned when finished.
     If \code{chunk>1}, chunks of this size are sent and processed sequentially.
     In other words, \code{chunk} adjusts the granularity of the parallel computation.
+  }
+  \item{blocking}{
+    If TRUE, blocking MPI calls will be used, altering the job scheduling system.
+    The default is to use non-blocking MPI calls for greater evenness and efficiency.
   }
   \item{stop.condition}{
     After each execution, this expression will be evaluated in the context of the return-value of \code{proc}.

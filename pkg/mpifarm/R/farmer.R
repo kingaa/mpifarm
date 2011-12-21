@@ -1,4 +1,4 @@
-mpi.farmer <- function (..., jobs, common, main, post, chunk = 1,
+mpi.farmer <- function (..., jobs, common, main, post, chunk = 1, blocking = FALSE,
                         checkpoint.file = NULL, checkpoint = 0, max.backup = 20,
                         stop.condition = TRUE, info = TRUE,
                         verbose = getOption("verbose")) {
