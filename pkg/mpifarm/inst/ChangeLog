@@ -1,5 +1,9 @@
 2011-12-21  kingaa
 
+	* [r106] man/farmer.Rd, man/mpifarm.Rd: - fix documentation bug
+	* [r105] R/farmer.R, R/mpifarm.R, man/farmer.Rd, man/mpifarm.Rd: -
+	  change 'blocking' default to TRUE
+	* [r104] inst/ChangeLog: - update changelog
 	* [r103] DESCRIPTION, R/farmer.R, R/miffarm.R, R/mpifarm.R,
 	  R/multistart-optim.R, R/multistart.optim.R, inst/ChangeLog,
 	  man/farmer.Rd, man/miffarm.Rd, man/mpifarm.Rd, tests/farmer.R,
