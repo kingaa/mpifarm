@@ -1,3 +1,12 @@
+2011-12-21  kingaa
+
+	* [r103] DESCRIPTION, R/farmer.R, R/miffarm.R, R/mpifarm.R,
+	  R/multistart-optim.R, R/multistart.optim.R, inst/ChangeLog,
+	  man/farmer.Rd, man/miffarm.Rd, man/mpifarm.Rd, tests/farmer.R,
+	  tests/farmer.Rout.save: - add nonblocking codes to mpifarm: see
+	  'blocking' argument
+	  - remove 'mif.farm' codes
+
 2011-12-20  kingaa
 
 	* [r102] R/mpifarm.R: - cosmetic changes to the code
