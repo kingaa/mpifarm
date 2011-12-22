@@ -33,11 +33,6 @@ y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.f
 y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
 
 y3 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,chunk=5,info=F,checkpoint=23,checkpoint.file="mpitest2.rda")
 y3 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,chunk=5,info=F,checkpoint=23,checkpoint.file="mpitest2.rda")
