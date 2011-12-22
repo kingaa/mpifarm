@@ -46,16 +46,17 @@ mpi.farmer(\dots, jobs, common, main, post,
     In other words, \code{chunk} adjusts the granularity of the parallel computation.
   }
   \item{blocking}{
-    If TRUE, blocking MPI calls will be used, altering the job scheduling system.
-    If FALSE non-blocking MPI calls are used for greater evenness and efficiency.
+    If TRUE, blocking MPI calls will be used.
+    If FALSE non-blocking MPI calls are used for greater evenness and efficiency in the scheduling.
   }
   \item{stop.condition}{
-    After each execution, this expression will be evaluated in the context of the return-value of \code{proc}.
-    For this option to have an effect, \code{proc} must return a named list and \code{stop.condition} must evaluate to \code{TRUE} or \code{FALSE} in the context of that list.
-    If it evaluates to \code{FALSE}, the job is not finished; the return-value of \code{proc} will be appended to \code{joblist} for another round of processing.
-    If it evaluates to \code{TRUE}, the job is finished.
+    For this option to have an effect, \code{main} must return a named list, call it \code{X}, and \code{stop.condition} must evaluate to \code{TRUE} or \code{FALSE} in the context of \code{X}.
+    In this case, after each individual job completes, \code{stop.condition} will be evaluated in the context of that job's returned list.
+    If it evaluates to \code{TRUE}, the job is deemed to be finished.
+    If it evaluates to \code{FALSE}, the job is deemed to be unfinished and \code{main} to be evaluated again;
+    the context for this next evaluation will be \code{X}.
     This allows one to complete the calcuation in several steps, which in turn allows for more effective load-balancing.
-    If the return-value of \code{proc} is not a list, this option has no effect.
+    If the return-value of \code{main} is not a list, this option has no effect.
   }
   \item{info}{
     If \code{info=TRUE}, information on the progress of each slave will be printed.
@@ -82,9 +83,19 @@ mpi.farmer(\dots, jobs, common, main, post,
   \code{mpi.farmer} will execute the code in \code{main} repeatedly in environments defined by the entries of the list created by \code{jobs} and the variables in the list created by \code{common}.
   If \pkg{Rmpi} slaves have been spawned, the jobs will be farmed out to them according to a load-balancing algorithm;
   if no slaves are running, or \pkg{Rmpi} has not been loaded, the jobs will be executed serially.
-
+  The \code{post} argument allows an arbitrary post-processing step to be performed after all the jobs are completed.
+  \code{mpi.farmer} also implements checkpointing.
+}
+\section{Iterated parallel computation}{
+  The basic idea of \code{mpi.farmer} is that a list of jobs (created by \code{jobs}), together with a set of variable common across jobs (created by \code{common}) defines a set of contexts in which \code{main} will be evaluated.
+  Because it is possible for the evaluation of \code{main} to result in the creation of a new context, it is possible to iterate this process.
+  Specifically, if, acting on job \code{X}, \code{main} returns a named list \code{Y} and if \code{stop.condition}, evaluated in the context of \code{Y}, is \code{FALSE}, then \code{X} is replaced by \code{Y} and \code{Y} is then returned to the stack of jobs to be evaluated.
+  This recycling will continue until \code{stop.condition} evaluates to \code{TRUE}.
+}
+\section{Checkpointing}{
   If the file named in \code{checkpoint.file} exists, \code{mpi.farmer} will not execute \code{jobs} or \code{common} but will instead load the checkpoint file and resume the computations.
-
+}
+\section{Stochastic simulations and parallel computation}{
   For many of the applications envisioned, the jobs the slaves are assigned involve stochastic simulations.
   Because of the way that \R initializes its pseudorandom number generators (RNGs), it is easy to make the mistake of failing to initialize the RNGs on different slaves to different states.
   If one fails to do this (and doesn't use a sophisticated parallel RNG like SPRNG) then it is possible that the random numbers generated on different slaves will be correlated or even identical.
@@ -92,11 +103,12 @@ mpi.farmer(\dots, jobs, common, main, post,
   Storing the state of the RNG before doing so is often desirable, but this can be frustrating if the RNG has not been initialized.
   \code{mpi.farmer} checks to see if \code{.Random.seed} exists and, if it does not, initializes the RNG with a call to \code{runif}.
   Thus, the user is guaranteed that the RNG has been initialized on each slave.
-
+}
+\section{Interrupt behavior}{
   A user interrupt to \code{mpi.farmer} results in an attempt to terminate the slaves cleanly.
   This may take some time, since each slave has to finish the job it is currently working on before it becomes receptive to messages from the master.
   A user interrupt issued during the abort process will leave some finished jobs in the MPI queue and therefore compromise the integrity of future parallel computations.
-  For this reason, when it is necessary to abort \code{mpi.farmer} and not possible to allow it to terminate cleanly, it is recommended that the slaves be closed (via \code{mpi.close.Rslaves}) and restarted before further parallel computaitons are attempted.
+  For this reason, when it is necessary to abort \code{mpi.farmer} and not possible to allow it to terminate cleanly, it is recommended that the slaves be closed (via \code{mpi.close.Rslaves}) and restarted before further parallel computations are attempted.
 }
 \value{
   If \code{post} is not set, \code{mpi.farmer} returns a list with one entry for each of the elements in the list created by \code{jobs}.
