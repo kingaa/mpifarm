@@ -1,5 +1,21 @@
+2011-12-22  kingaa
+
+	* [r111] tests/simple.R, tests/simple.Rout.save: - remove unneeded
+	  unit test
+	* [r110] DESCRIPTION, R/multistart-optim.R, R/partrans.R,
+	  inst/scripts/miffit.R, inst/scripts/miffit.pbs,
+	  inst/scripts/simple.R, inst/scripts/simple.pbs,
+	  man/multistart.optim.Rd: - remove vestiges of mif.farm facilities
+	  - remove multistart-optim facility
+	  - remove scripts
+	* [r109] DESCRIPTION, R/mpifarm.R, tests/mpitest.R,
+	  tests/mpitest.Rout.save, tests/mstop.R, tests/mstop.Rout.save: -
+	  fix bug in nonblocking code
+
 2011-12-21  kingaa
 
+	* [r108] R/farmer.R: - cosmetic
+	* [r107] DESCRIPTION, inst/ChangeLog: - update ChangeLog
 	* [r106] man/farmer.Rd, man/mpifarm.Rd: - fix documentation bug
 	* [r105] R/farmer.R, R/mpifarm.R, man/farmer.Rd, man/mpifarm.Rd: -
 	  change 'blocking' default to TRUE
