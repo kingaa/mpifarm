@@ -10,7 +10,7 @@
 mpi.farm(proc, joblist, common = list(), status = NULL, chunk = 1,
          stop.condition = TRUE, info = TRUE,
          checkpoint = 0, checkpoint.file = NULL,
-         max.backup = 20, sleep = 0.01, blocking = TRUE,
+         max.backup = 20, sleep = 0.01, blocking = FALSE,
          verbose = getOption("verbose"))
 mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
 }
