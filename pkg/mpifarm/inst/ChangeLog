@@ -1,5 +1,13 @@
+2011-12-24  kingaa
+
+	* [r114] DESCRIPTION, R/farmer.R, R/mpifarm.R, man/farmer.Rd,
+	  man/mpifarm.Rd: - make blocking=FALSE the default
+
 2011-12-22  kingaa
 
+	* [r113] DESCRIPTION, man/farmer.Rd, man/mpifarm.Rd: - improve the
+	  documentation
+	* [r112] inst/ChangeLog: - update ChangeLog
 	* [r111] tests/simple.R, tests/simple.Rout.save: - remove unneeded
 	  unit test
 	* [r110] DESCRIPTION, R/multistart-optim.R, R/partrans.R,
