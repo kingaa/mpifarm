@@ -1,6 +1,6 @@
 
-R version 2.14.0 (2011-10-31)
-Copyright (C) 2011 The R Foundation for Statistical Computing
+R version 2.14.2 (2012-02-29)
+Copyright (C) 2012 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 Platform: x86_64-unknown-linux-gnu (64-bit)
 
@@ -68,7 +68,7 @@ slave6 (rank 6, comm 1) of size 7 is running on: eeb-tilia
 > 
 > toc <- Sys.time()
 > print(toc-tic)
-Time difference of 0.3935091 secs
+Time difference of 4.265508 secs
 > 
 > tic <- Sys.time()
 > 
@@ -97,7 +97,7 @@ Time difference of 0.3935091 secs
 > 
 > toc <- Sys.time()
 > print(toc-tic)
-Time difference of 0.06739211 secs
+Time difference of 0.1040564 secs
 > 
 > tic <- Sys.time()
 > 
@@ -126,7 +126,7 @@ Time difference of 0.06739211 secs
 > 
 > toc <- Sys.time()
 > print(toc-tic)
-Time difference of 0.6747274 secs
+Time difference of 0.6932538 secs
 > 
 > mpi.close.Rslaves()
 [1] 1
@@ -142,7 +142,4 @@ Time difference of 0.6747274 secs
 > 
 > stopifnot(identical(z1,z2)&&identical(n1,n2))
 > stopifnot(identical(z2,z3)&&identical(n2,n3))
-> 
-> mpi.exit()
-[1] "Detaching Rmpi. Rmpi cannot be used unless relaunching R."
 > 

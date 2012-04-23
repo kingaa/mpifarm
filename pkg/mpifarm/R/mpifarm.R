@@ -163,6 +163,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                        idle <- c(idle,src)
                        if (verbose)
                          cat("slave ",src," has sent results\n")
+                       chnksize <- length(res)
                        for (id in names(res)) {
                          joblist[[id]] <- res[[id]]
                          if (inherits(res[[id]],"try-error")) { # error
@@ -203,8 +204,8 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                          idle <- idle[-1]
                        }
                        if (info) {
-                         progress[1,src] <- progress[1,src]+1
-                         progress[1,nslave+1] <- progress[1,nslave+1]+1
+                         progress[1,src] <- progress[1,src]+chnksize
+                         progress[1,nslave+1] <- progress[1,nslave+1]+chnksize
                          print(progress)
                        }
                        if ((checkpointing)&&((rcvd%%checkpoint)==0)) {
@@ -255,6 +256,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                        res <- mpi.recv.Robj(source=src,tag=tag)
                        rcvd <- rcvd+1
                        idle <- c(idle,src)
+                       chnksize <- length(res)
                        ## evaluate and package the results
                        for (id in names(res)) {
                          joblist[[id]] <- res[[id]]
@@ -281,8 +283,8 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                          }
                        }
                        if (info) {
-                         progress[1,src] <- progress[1,src]+1
-                         progress[1,nslave+1] <- progress[1,nslave+1]+1
+                         progress[1,src] <- progress[1,src]+chnksize
+                         progress[1,nslave+1] <- progress[1,nslave+1]+chnksize
                          print(progress)
                        }
                        if ((checkpointing)&&((rcvd%%checkpoint)==0)) {
@@ -333,6 +335,7 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                      srctag <- mpi.get.sourcetag()
                      src <- srctag[1]
                      idle <- c(idle,src)
+                     chnksize <- length(res)
                      for (id in names(res)) {
                        joblist[[id]] <- res[[id]]
                        if (inherits(res[[id]],"try-error")) { # error
@@ -358,8 +361,8 @@ mpi.farm <- function (proc, joblist, common=list(), status = NULL, chunk = 1,
                        }
                      }
                      if (info) {
-                       progress[1,src] <- progress[1,src]+1
-                       progress[1,nslave+1] <- progress[1,nslave+1]+1
+                       progress[1,src] <- progress[1,src]+chnksize
+                       progress[1,nslave+1] <- progress[1,nslave+1]+chnksize
                        print(progress)
                      }
                      if (verbose)

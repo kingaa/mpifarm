@@ -106,5 +106,4 @@ mpi.farmer(
 stopifnot(identical(results,results3))
 
 mpi.close.Rslaves()
-mpi.exit()
 

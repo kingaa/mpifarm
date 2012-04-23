@@ -1,6 +1,6 @@
 
-R version 2.14.0 (2011-10-31)
-Copyright (C) 2011 The R Foundation for Statistical Computing
+R version 2.14.2 (2012-02-29)
+Copyright (C) 2012 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 Platform: x86_64-unknown-linux-gnu (64-bit)
 
@@ -47,31 +47,35 @@ slave8 (rank 8, comm 1) of size 9 is running on: eeb-tilia
 > 
 > y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+runif(1)},x,info=F)
 Warning messages:
-1: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+1: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
  
-2: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+2: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
  
 3: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
  
-4: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
+4: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
  
-5: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+5: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
  
-6: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
+6: mpi.farm: slave 7 reports: Error in eval(expr, envir, enclos) : yikes
+ 
+7: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
  
 > warnings()
 Warning messages:
-1: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+1: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
 
-2: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
+2: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
 
 3: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
 
-4: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
+4: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
 
-5: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
+5: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
 
-6: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
+6: mpi.farm: slave 7 reports: Error in eval(expr, envir, enclos) : yikes
+
+7: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
 
 > 
 > seeds <- as.integer(ceiling(runif(n=321,1,2^31)))
@@ -164,7 +168,4 @@ file 'mpitest.rda' exists, backup 'mpitest.rda.bak-7' created
 > stopifnot(identical(y1,y2))
 > 
 > stopifnot(identical(z1,z2))
-> 
-> mpi.exit()
-[1] "Detaching Rmpi. Rmpi cannot be used unless relaunching R."
 > 

@@ -110,5 +110,3 @@ n3 <- sapply(y3,function(x)x$n)
 
 stopifnot(identical(z1,z2)&&identical(n1,n2))
 stopifnot(identical(z2,z3)&&identical(n2,n3))
-
-mpi.exit()

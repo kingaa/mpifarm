@@ -1,6 +1,6 @@
 
-R version 2.14.0 (2011-10-31)
-Copyright (C) 2011 The R Foundation for Statistical Computing
+R version 2.14.2 (2012-02-29)
+Copyright (C) 2012 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 Platform: x86_64-unknown-linux-gnu (64-bit)
 
@@ -17,6 +17,7 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 Type 'q()' to quit R.
 
 > library(mpifarm)
+Loading required package: Rmpi
 > library(Rmpi)
 > 
 > ncpu <- 8
@@ -246,7 +247,5 @@ main computation finished, post-processing
 > 
 > mpi.close.Rslaves()
 [1] 1
-> mpi.exit()
-[1] "Detaching Rmpi. Rmpi cannot be used unless relaunching R."
 > 
 > 

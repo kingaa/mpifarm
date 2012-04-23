@@ -92,5 +92,3 @@ z2 <- unlist(mpi.farm({set.seed(seed); a+b},joblist=x2,info=F))
 stopifnot(identical(y1,y2))
 
 stopifnot(identical(z1,z2))
-
-mpi.exit()
