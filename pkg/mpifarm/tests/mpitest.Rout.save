@@ -16,156 +16,111 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
-> require(Rmpi)
+> library(mpifarm)
+> 
+> if (require(Rmpi)) {
++ 
++   ncpus <- 8
++ 
++   mpi.spawn.Rslaves(nslaves=ncpus,needlog=T)
++ 
++   set.seed(1066L)
++   seeds <- as.integer(ceiling(runif(n=ncpus,0,2^31)))
++ 
++   x <- mpi.farm({set.seed(seed)},joblist=lapply(seeds,function(x)list(seed=x)),info=F)
++ 
++   x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
++   y <- mpi.farm(a+b,x,info=F)
++ 
++   x <- lapply(1:100,function(k)list(a=k))
++   y <- mpi.farm({for (j in 1:10000) j <- j+1; a},x,info=F)
++   stopifnot(sum(diff(as.numeric(y))!=1)==0)
++ 
++   y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+runif(1)},x,info=F)
++   warnings()
++ 
++   seeds <- as.integer(ceiling(runif(n=321,1,2^31)))
++   x <- lapply(1:321,function(k)list(a=k,b=10*k,seed=seeds[k]))
++   y1 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=x,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
++   load("mpitest.rda")
++   y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,status=status,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
++   stopifnot(identical(y1,y2))
++ 
++   joblist <- x
++   y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
++   y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
++   y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
++   y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
++   y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
++ 
++   y3 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,chunk=5,info=F,checkpoint=23,checkpoint.file="mpitest2.rda")
++   y3 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,chunk=5,info=F,checkpoint=23,checkpoint.file="mpitest2.rda")
++   stopifnot(identical(y2,y3))
++ 
++   x <- lapply(1:50,function(k)list(a=k,b=10*k,done=FALSE))
++   y <- mpi.farm(
++                 {
++                   list(a=a-1,b=b,m=mean(rnorm(n=b)),done=(a<=1))
++                 },
++                 joblist=x,
++                 stop.condition=done,
++                 checkpoint.file="mpitest.rda",
++                 checkpoint=500,
++                 info=FALSE
++                 )
++ 
++   seeds <- as.integer(ceiling(runif(n=100,1,2^31)))
++   x1 <- lapply(1:100,function(k)list(a=k,b=0,done=0,seed=seeds[k]))
++   y1 <- mpi.farm(
++                  {
++                    set.seed(seed)
++                    list(
++                         a=a,
++                         b=b+rnorm(1),
++                         done=done+1,
++                         seed=seed
++                         )
++                  },
++                  joblist=x1,
++                  stop.condition=((abs(b)>2)|(done>10)),
++                  info=F
++                  )
++ 
++   x2 <- lapply(1:100,function(k)list(a=k,b=rnorm(1),seed=seeds[k]))
++   z1 <- unlist(mpi.farm({set.seed(seed); a+b},joblist=x2,info=F))
++ 
++   mpi.close.Rslaves()
++ 
++   y2 <- mpi.farm(
++                  {
++                    set.seed(seed)
++                    list(
++                         a=a,
++                         b=b+rnorm(1),
++                         done=done+1,
++                         seed=seed
++                         )
++                  },
++                  joblist=x1,
++                  stop.condition=((abs(b)>2)|(done>10)),
++                  info=F
++                  )
++ 
++   z2 <- unlist(mpi.farm({set.seed(seed); a+b},joblist=x2,info=F))
++ 
++   stopifnot(identical(y1,y2))
++ 
++   stopifnot(identical(z1,z2))
++ 
++ }
 Loading required package: Rmpi
-> require(mpifarm)
-Loading required package: mpifarm
-> 
-> ncpus <- 8
-> 
-> mpi.spawn.Rslaves(nslaves=ncpus,needlog=T)
 	8 slaves are spawned successfully. 0 failed.
-master (rank 0, comm 1) of size 9 is running on: eeb-tilia 
-slave1 (rank 1, comm 1) of size 9 is running on: eeb-tilia 
-slave2 (rank 2, comm 1) of size 9 is running on: eeb-tilia 
-slave3 (rank 3, comm 1) of size 9 is running on: eeb-tilia 
+master (rank 0, comm 1) of size 9 is running on: eeb-quercus 
+slave1 (rank 1, comm 1) of size 9 is running on: eeb-quercus 
+slave2 (rank 2, comm 1) of size 9 is running on: eeb-quercus 
+slave3 (rank 3, comm 1) of size 9 is running on: eeb-quercus 
 ... ... ...
-slave7 (rank 7, comm 1) of size 9 is running on: eeb-tilia 
-slave8 (rank 8, comm 1) of size 9 is running on: eeb-tilia 
-> 
-> set.seed(1066L)
-> seeds <- as.integer(ceiling(runif(n=ncpus,0,2^31)))
-> 
-> x <- mpi.farm({set.seed(seed)},joblist=lapply(seeds,function(x)list(seed=x)),info=F)
-> 
-> x <- lapply(1:100,function(k)list(a=k,b=rnorm(1)))
-> y <- mpi.farm(a+b,x,info=F)
-> 
-> x <- lapply(1:100,function(k)list(a=k))
-> y <- mpi.farm({for (j in 1:10000) j <- j+1; a},x,info=F)
-> stopifnot(sum(diff(as.numeric(y))!=1)==0)
-> 
-> y <- mpi.farm({if(runif(1)<0.1)stop('yikes');a+runif(1)},x,info=F)
-Warning messages:
-1: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
- 
-2: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
- 
-3: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
- 
-4: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
- 
-5: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
- 
-6: mpi.farm: slave 7 reports: Error in eval(expr, envir, enclos) : yikes
- 
-7: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
- 
-> warnings()
-Warning messages:
-1: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
-
-2: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
-
-3: mpi.farm: slave 4 reports: Error in eval(expr, envir, enclos) : yikes
-
-4: mpi.farm: slave 3 reports: Error in eval(expr, envir, enclos) : yikes
-
-5: mpi.farm: slave 5 reports: Error in eval(expr, envir, enclos) : yikes
-
-6: mpi.farm: slave 7 reports: Error in eval(expr, envir, enclos) : yikes
-
-7: mpi.farm: slave 2 reports: Error in eval(expr, envir, enclos) : yikes
-
-> 
-> seeds <- as.integer(ceiling(runif(n=321,1,2^31)))
-> x <- lapply(1:321,function(k)list(a=k,b=10*k,seed=seeds[k]))
-> y1 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=x,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-> load("mpitest.rda")
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,status=status,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-Warning messages:
-1: file 'mpitest.rda' exists, backup 'mpitest.rda.bak-1' created 
-2: mpi.farm warning: more slaves than jobs 
-> stopifnot(identical(y1,y2))
-> 
-> joblist <- x
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-Warning message:
-file 'mpitest.rda' exists, backup 'mpitest.rda.bak-2' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-Warning message:
-file 'mpitest.rda' exists, backup 'mpitest.rda.bak-3' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-Warning message:
-file 'mpitest.rda' exists, backup 'mpitest.rda.bak-4' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-Warning message:
-file 'mpitest.rda' exists, backup 'mpitest.rda.bak-5' created 
-> y2 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,checkpoint.file="mpitest.rda",checkpoint=23,info=F)
-Warning message:
-file 'mpitest.rda' exists, backup 'mpitest.rda.bak-6' created 
-> 
-> y3 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,chunk=5,info=F,checkpoint=23,checkpoint.file="mpitest2.rda")
-> y3 <- mpi.farm({set.seed(seed); a+mean(rnorm(n=b))},joblist=joblist,chunk=5,info=F,checkpoint=23,checkpoint.file="mpitest2.rda")
-Warning message:
-file 'mpitest2.rda' exists, backup 'mpitest2.rda.bak-1' created 
-> stopifnot(identical(y2,y3))
-> 
-> x <- lapply(1:50,function(k)list(a=k,b=10*k,done=FALSE))
-> y <- mpi.farm(
-+               {
-+                list(a=a-1,b=b,m=mean(rnorm(n=b)),done=(a<=1))
-+                },
-+               joblist=x,
-+               stop.condition=done,
-+               checkpoint.file="mpitest.rda",
-+               checkpoint=500,
-+               info=FALSE
-+               )
-Warning message:
-file 'mpitest.rda' exists, backup 'mpitest.rda.bak-7' created 
-> 
-> seeds <- as.integer(ceiling(runif(n=100,1,2^31)))
-> x1 <- lapply(1:100,function(k)list(a=k,b=0,done=0,seed=seeds[k]))
-> y1 <- mpi.farm(
-+                {
-+                  set.seed(seed)
-+                  list(
-+                       a=a,
-+                       b=b+rnorm(1),
-+                       done=done+1,
-+                       seed=seed
-+                       )
-+                },
-+                joblist=x1,
-+                stop.condition=((abs(b)>2)|(done>10)),
-+                info=F
-+                )
-> 
-> x2 <- lapply(1:100,function(k)list(a=k,b=rnorm(1),seed=seeds[k]))
-> z1 <- unlist(mpi.farm({set.seed(seed); a+b},joblist=x2,info=F))
-> 
-> mpi.close.Rslaves()
-[1] 1
-> 
-> y2 <- mpi.farm(
-+                {
-+                  set.seed(seed)
-+                  list(
-+                       a=a,
-+                       b=b+rnorm(1),
-+                       done=done+1,
-+                       seed=seed
-+                       )
-+                },
-+                joblist=x1,
-+                stop.condition=((abs(b)>2)|(done>10)),
-+                info=F
-+                )
-> 
-> z2 <- unlist(mpi.farm({set.seed(seed); a+b},joblist=x2,info=F))
-> 
-> stopifnot(identical(y1,y2))
-> 
-> stopifnot(identical(z1,z2))
+slave7 (rank 7, comm 1) of size 9 is running on: eeb-quercus 
+slave8 (rank 8, comm 1) of size 9 is running on: eeb-quercus 
+There were 15 warnings (use warnings() to see them)
 > 

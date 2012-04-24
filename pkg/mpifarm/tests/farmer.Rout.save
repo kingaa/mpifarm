@@ -17,55 +17,129 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 Type 'q()' to quit R.
 
 > library(mpifarm)
+> 
+> if (require(Rmpi)) {
++ 
++   ncpu <- 8
++   mpi.spawn.Rslaves(nslaves=ncpu)
++ 
++   mpi.farmer(
++              num=100,
++              bigseed=343435L,
++              jobs={
++                set.seed(bigseed)
++                seeds <- as.integer(ceiling(runif(n=num,min=0,max=2^31-1)))
++                joblist <- list()
++                for (k in seq_along(seeds))
++                  joblist[[k]] <- list(seed=seeds[k],a=k)
++                joblist
++              },
++              common=list(q=11),
++              main={
++                save.seed <- .Random.seed
++                set.seed(seed)
++                x <- rnorm(n=1,mean=a+q)
++                .Random.seed <<- save.seed
++                list(s=a+q,x=x)
++              },
++              post={
++                data.frame(
++                           s=sapply(results,function(x)x$s),
++                           x=sapply(results,function(x)x$x)
++                           )
++              },
++              checkpoint.file="farmer1.rda",
++              checkpoint=1,
++              info=FALSE
++              ) -> results
++ 
++   print(results)
++ 
++   mpi.farmer(
++              num=100,
++              chunk=5,
++              bigseed=343435L,
++              jobs={
++                set.seed(bigseed)
++                seeds <- as.integer(ceiling(runif(n=num,min=0,max=2^31-1)))
++                joblist <- list()
++                for (k in seq_along(seeds))
++                  joblist[[k]] <- list(seed=seeds[k],a=k)
++                joblist
++              },
++              common=list(q=11),
++              main={
++                save.seed <- .Random.seed
++                print(c(seed,a,q))
++                set.seed(seed)
++                x <- rnorm(n=1,mean=a+q)
++                .Random.seed <<- save.seed
++                list(s=a+q,x=x)
++              },
++              post={
++                data.frame(
++                           s=sapply(results,function(x)x$s),
++                           x=sapply(results,function(x)x$x)
++                           )
++              },
++              checkpoint.file="farmer2.rda",
++              checkpoint=1,
++              info=FALSE
++              ) -> results2
++ 
++   stopifnot(identical(results,results2))
++ 
++   mpi.farmer(
++              num=100,
++              chunk=5,
++              bigseed=343435L,
++              blocking=TRUE,
++              jobs={
++                set.seed(bigseed)
++                seeds <- as.integer(ceiling(runif(n=num,min=0,max=2^31-1)))
++                joblist <- list()
++                for (k in seq_along(seeds))
++                  joblist[[k]] <- list(seed=seeds[k],a=k)
++                joblist
++              },
++              common=list(q=11),
++              main={
++                save.seed <- .Random.seed
++                print(c(seed,a,q))
++                set.seed(seed)
++                x <- rnorm(n=1,mean=a+q)
++                .Random.seed <<- save.seed
++                list(s=a+q,x=x)
++              },
++              post={
++                data.frame(
++                           s=sapply(results,function(x)x$s),
++                           x=sapply(results,function(x)x$x)
++                           )
++              },
++              checkpoint.file="farmer3.rda",
++              checkpoint=1,
++              info=FALSE
++              ) -> results3
++ 
++   stopifnot(identical(results,results3))
++ 
++   mpi.close.Rslaves()
++ 
++ }
 Loading required package: Rmpi
-> library(Rmpi)
-> 
-> ncpu <- 8
-> mpi.spawn.Rslaves(nslaves=ncpu)
 	8 slaves are spawned successfully. 0 failed.
-master (rank 0, comm 1) of size 9 is running on: eeb-tilia 
-slave1 (rank 1, comm 1) of size 9 is running on: eeb-tilia 
-slave2 (rank 2, comm 1) of size 9 is running on: eeb-tilia 
-slave3 (rank 3, comm 1) of size 9 is running on: eeb-tilia 
+master (rank 0, comm 1) of size 9 is running on: eeb-quercus 
+slave1 (rank 1, comm 1) of size 9 is running on: eeb-quercus 
+slave2 (rank 2, comm 1) of size 9 is running on: eeb-quercus 
+slave3 (rank 3, comm 1) of size 9 is running on: eeb-quercus 
 ... ... ...
-slave7 (rank 7, comm 1) of size 9 is running on: eeb-tilia 
-slave8 (rank 8, comm 1) of size 9 is running on: eeb-tilia 
-> 
-> mpi.farmer(
-+            num=100,
-+            bigseed=343435L,
-+            jobs={
-+              set.seed(bigseed)
-+              seeds <- as.integer(ceiling(runif(n=num,min=0,max=2^31-1)))
-+              joblist <- list()
-+              for (k in seq_along(seeds))
-+                joblist[[k]] <- list(seed=seeds[k],a=k)
-+              joblist
-+            },
-+            common=list(q=11),
-+            main={
-+              save.seed <- .Random.seed
-+              set.seed(seed)
-+              x <- rnorm(n=1,mean=a+q)
-+              .Random.seed <<- save.seed
-+              list(s=a+q,x=x)
-+            },
-+            post={
-+              data.frame(
-+                         s=sapply(results,function(x)x$s),
-+                         x=sapply(results,function(x)x$x)
-+                         )
-+            },
-+            checkpoint.file="farmer1.rda",
-+            checkpoint=1,
-+            info=FALSE
-+            ) -> results
+slave7 (rank 7, comm 1) of size 9 is running on: eeb-quercus 
+slave8 (rank 8, comm 1) of size 9 is running on: eeb-quercus 
 setting up
 running main computation
 100 unfinished jobs remaining
 main computation finished, post-processing
-> 
-> print(results)
       s         x
 1    12  11.36940
 2    13  13.32720
@@ -167,85 +241,13 @@ main computation finished, post-processing
 98  109 110.62381
 99  110 111.02359
 100 111 110.46856
-> 
-> mpi.farmer(
-+            num=100,
-+            chunk=5,
-+            bigseed=343435L,
-+            jobs={
-+              set.seed(bigseed)
-+              seeds <- as.integer(ceiling(runif(n=num,min=0,max=2^31-1)))
-+              joblist <- list()
-+              for (k in seq_along(seeds))
-+                joblist[[k]] <- list(seed=seeds[k],a=k)
-+              joblist
-+            },
-+            common=list(q=11),
-+            main={
-+              save.seed <- .Random.seed
-+              print(c(seed,a,q))
-+              set.seed(seed)
-+              x <- rnorm(n=1,mean=a+q)
-+              .Random.seed <<- save.seed
-+              list(s=a+q,x=x)
-+            },
-+            post={
-+              data.frame(
-+                         s=sapply(results,function(x)x$s),
-+                         x=sapply(results,function(x)x$x)
-+                         )
-+            },
-+            checkpoint.file="farmer2.rda",
-+            checkpoint=1,
-+            info=FALSE
-+            ) -> results2
 setting up
 running main computation
 100 unfinished jobs remaining
 main computation finished, post-processing
-> 
-> stopifnot(identical(results,results2))
-> 
-> mpi.farmer(
-+            num=100,
-+            chunk=5,
-+            bigseed=343435L,
-+            blocking=TRUE,
-+            jobs={
-+              set.seed(bigseed)
-+              seeds <- as.integer(ceiling(runif(n=num,min=0,max=2^31-1)))
-+              joblist <- list()
-+              for (k in seq_along(seeds))
-+                joblist[[k]] <- list(seed=seeds[k],a=k)
-+              joblist
-+            },
-+            common=list(q=11),
-+            main={
-+              save.seed <- .Random.seed
-+              print(c(seed,a,q))
-+              set.seed(seed)
-+              x <- rnorm(n=1,mean=a+q)
-+              .Random.seed <<- save.seed
-+              list(s=a+q,x=x)
-+            },
-+            post={
-+              data.frame(
-+                         s=sapply(results,function(x)x$s),
-+                         x=sapply(results,function(x)x$x)
-+                         )
-+            },
-+            checkpoint.file="farmer3.rda",
-+            checkpoint=1,
-+            info=FALSE
-+            ) -> results3
 setting up
 running main computation
 100 unfinished jobs remaining
 main computation finished, post-processing
-> 
-> stopifnot(identical(results,results3))
-> 
-> mpi.close.Rslaves()
 [1] 1
-> 
 > 
