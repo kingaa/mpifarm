@@ -6,6 +6,7 @@ Date: 2012-04-23
 Author: Aaron A. King <kingaa@umich.edu>
 Maintainer: Aaron A. King <kingaa@umich.edu>
 Description: Parallel job-farming.
-Depends: R(>= 2.14.2), Rmpi
+Depends: R(>= 2.14.2)
+Suggests: Rmpi
 License: GPL (>= 2)
 Collate: mpifarm.R farmer.R
