@@ -109,14 +109,21 @@ mpi.farm.slave(fn, common=list(), verbose = getOption("verbose"))
     print(unlist(y))
 
     x <- lapply(1:100,function(k)list(a=k,b=0,done=0))
-    y <- mpi.farm({b <- b+rnorm(1); list(a=a,b=b,done=done+1)},x,stop.condition=((abs(b)>2)|(done>10)))
+    y <- mpi.farm({
+                   b <- b+rnorm(1)
+                   list(a=a,b=b,done=done+1)
+                   },x,stop.condition=((abs(b)>2)|(done>10)))
 
     mpi.close.Rslaves()
 
   }
 ## run some jobs in serial mode
   x <- lapply(1:100,function(k)list(a=k,b=0,done=0))
-  y <- mpi.farm({b <- b+rnorm(1); list(a=a,b=b,done=done+1)},x,stop.condition=((abs(b)>2)|(done>10)))
+  y <- mpi.farm({
+                 b <- b+rnorm(1)
+                 list(a=a,b=b,done=done+1)
+                 },x,
+                 stop.condition=((abs(b)>2)|(done>10)))
 }
 \keyword{programming}
 \keyword{utilities}

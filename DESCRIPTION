@@ -1,6 +1,6 @@
 Package: mpifarm
 Type: Package
-Title: Farm out a sequence of jobs to a cluster of slaves using MPI
+Title: Farm Out a Sequence of Jobs to a Cluster of Slaves using MPI
 Version: 1.19-3
 Date: 2015-07-09
 Author: Aaron A. King <kingaa@umich.edu>
