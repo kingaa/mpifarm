@@ -1,1 +1,5 @@
+importFrom(Rmpi,mpi.any.source,mpi.any.tag,mpi.bcast.cmd,
+           mpi.bcast.Robj2slave,mpi.comm.rank,mpi.comm.size,
+           mpi.get.sourcetag,mpi.iprobe,mpi.isend.Robj,
+           mpi.recv.Robj,mpi.remote.exec,mpi.send.Robj)
 export(mpi.farmer,mpi.farm,mpi.farm.slave)
